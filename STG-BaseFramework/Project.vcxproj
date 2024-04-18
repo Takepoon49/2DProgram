@@ -164,6 +164,8 @@
     <ClInclude Include="Src\Application\Object\Attack\Bullet\bullet0.h" />
     <ClInclude Include="Src\Application\Object\BaseObject.h" />
     <ClInclude Include="Src\Application\Object\Enemy\enemy.h" />
+    <ClInclude Include="Src\Application\Object\Enemy\enemyA.h" />
+    <ClInclude Include="Src\Application\Object\Enemy\EnemyBase.h" />
     <ClInclude Include="Src\Application\Object\Hit\Hit.h" />
     <ClInclude Include="Src\Application\Object\Item\item.h" />
     <ClInclude Include="Src\Application\Object\Map\map.h" />
@@ -198,6 +200,8 @@
     <ClCompile Include="Src\Application\Object\Attack\Bullet\bullet0.cpp" />
     <ClCompile Include="Src\Application\Object\BaseObject.cpp" />
     <ClCompile Include="Src\Application\Object\Enemy\enemy.cpp" />
+    <ClCompile Include="Src\Application\Object\Enemy\enemyA.cpp" />
+    <ClCompile Include="Src\Application\Object\Enemy\EnemyBase.cpp" />
     <ClCompile Include="Src\Application\Object\Hit\Hit.cpp" />
     <ClCompile Include="Src\Application\Object\Item\item.cpp" />
     <ClCompile Include="Src\Application\Object\Map\map.cpp" />

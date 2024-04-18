@@ -10,23 +10,23 @@ void C_Item::Init()
 
 	m_rect = { 0, 0, 0, 0 };
 
-	m_flg = BaseBitState::dead;
+	m_flg = BaseBitState::st_dead;
 }
 
 void C_Item::Update()
 {
-	if (m_flg == BaseBitState::dead) return;
+	if (m_flg == BaseBitState::st_dead) return;
 
 	m_pos += m_move;
 
-	if (m_pos.y < scrBottom - m_rad) m_flg = BaseBitState::dead;
+	if (m_pos.y < scrBottom - m_rad) m_flg = BaseBitState::st_dead;
 
 	m_mat = Math::Matrix::CreateTranslation(m_pos.x, m_pos.y, 0.0f);
 }
 
 void C_Item::Draw()
 {
-	if (m_flg == BaseBitState::dead) return;
+	if (m_flg == BaseBitState::st_dead) return;
 
 	DrawImgEX(m_mat, m_pTex, m_rect, m_color);
 }
@@ -51,7 +51,7 @@ void C_Item::Drop(Math::Vector2 a_pos, bool type)
 	m_flg = 1;
 }
 
-void C_Item::SetAlive(UINT a_alive)
+void C_Item::SetFlg(UINT a_alive)
 {
 	m_flg = a_alive;
 }

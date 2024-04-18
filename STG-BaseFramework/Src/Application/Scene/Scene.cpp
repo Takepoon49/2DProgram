@@ -1,6 +1,8 @@
 #include "../main.h"
 #include "Scene.h"
 
+#include "../Object/Enemy/enemyA.h"
+
 void Scene::Draw2D()
 {
 	switch (nowScene)
@@ -32,7 +34,7 @@ void Scene::DrawGame1()
 	DrawHako(0.0f, 0.0f, 640.0f, 360.0f, &Math::Color(0.0f, 0.0f, 0.1f, 1.0f), true);
 
 	// アイテム
-	for (int i = 0; i < m_itemList.size(); i++)
+	for (UINT i = 0; i < m_itemList.size(); i++)
 	{
 		m_itemList[i]->Draw();
 	}
@@ -42,6 +44,11 @@ void Scene::DrawGame1()
 
 	// 敵機
 	m_enemy.Draw();
+
+	for (UINT i = 0; i < m_enemyAList.size(); i++)
+	{
+		m_enemyAList[i]->Draw();
+	}
 
 	// 自機
 	m_player.Draw();
@@ -93,18 +100,33 @@ void Scene::Update()
 
 void Scene::CheckGame1Vec()
 {
-	m_item_it = m_itemList.begin();
-	while (m_item_it != m_itemList.end())
+	m_itemIt = m_itemList.begin();
+	while (m_itemIt != m_itemList.end())
 	{
-		const bool bAlive = (*m_item_it)->GetAlive();
+		const bool bAlive = (*m_itemIt)->GetFlg();
 		if (!bAlive)
 		{
-			delete (*m_item_it);
-			m_item_it = m_itemList.erase(m_item_it);
+			delete (*m_itemIt);
+			m_itemIt = m_itemList.erase(m_itemIt);
 		}
 		else
 		{
-			m_item_it++;
+			m_itemIt++;
+		}
+	}
+
+	m_enemyAIt = m_enemyAList.begin();
+	while (m_enemyAIt != m_enemyAList.end())
+	{
+		const bool bActive = (*m_enemyAIt)->GetFlg();
+		if (!bActive)
+		{
+			delete (*m_enemyAIt);
+			m_enemyAIt = m_enemyAList.erase(m_enemyAIt);
+		}
+		else
+		{
+			m_enemyAIt++;
 		}
 	}
 }
@@ -113,9 +135,6 @@ void Scene::UpdateGame1()
 {
 	// ビーム
 	m_beam.Update(beamNum, beamDeg);
-
-	// 敵機
-	m_enemy.Update();
 
 	if (GetKey('I'))
 	{
@@ -132,6 +151,9 @@ void Scene::UpdateGame1()
 			tempItem->SetTexture(&m_itemTex);
 			tempItem->Drop({ -150.0f, 300.0f }, 1);
 			m_itemList.push_back(tempItem);
+
+			EnemyA* tempEnemy = new EnemyA();
+			m_enemyAList.push_back(tempEnemy);
 		}
 		keyFlg[key_I] = true;
 	}
@@ -140,8 +162,16 @@ void Scene::UpdateGame1()
 		keyFlg[key_I] = false;
 	}
 
+	// 敵機
+	m_enemy.Update();
+
+	for (UINT i = 0; i < m_enemyAList.size(); i++)
+	{
+		m_enemyAList[i]->Update();
+	}
+
 	// アイテム
-	for (int i = 0; i < m_itemList.size(); i++)
+	for (UINT i = 0; i < m_itemList.size(); i++)
 	{
 		m_itemList[i]->Update();
 
@@ -150,7 +180,7 @@ void Scene::UpdateGame1()
 		{
 			//m_player.SetB
 
-			m_itemList[i]->SetFlg(false);
+			m_itemList[i]->SetFlg(0);
 		}
 	}
 
@@ -164,14 +194,14 @@ void Scene::UpdateGame1()
 		{
 			//m_player.LockOn(m_enemy.GetObj());
 
-			m_enemy.SetbIsLock(true);
+			m_enemy.SetbIsLock(1);
 		}
 	}
 
 	// 弾と敵の当たり判定
 	for (int i = 0; i < m_player.GetBulletNum(); i++)
 	{
-		if (m_player.GetBulletFlg(i) == BaseBitState::dead) continue;
+		if (m_player.GetBulletFlg(i) == st_dead) continue;
 
 		//if (m_player.GetBulletObj(i).pos.y > 200.0f)
 		//{
@@ -180,7 +210,7 @@ void Scene::UpdateGame1()
 		if (m_hit.HitObjBox(m_player.GetBulletObj(i), m_enemy.GetObj()))
 		{
 			m_player.SetBulletFlg(i, false);
-			m_enemy.SetFlg(BaseBitState::alive);
+			m_enemy.SetFlg(st_stat1);
 		}
 	}
 
@@ -224,6 +254,8 @@ void Scene::InitGame1()
 	m_enemyTex.Load("Data/Texture/enemy0.png");
 	m_enemy.SetEnemyTex(&m_enemyTex);
 
+	
+
 	// マップ
 	m_map.SetOwner(this);
 	m_map.Init();
@@ -247,6 +279,8 @@ void Scene::Release()
 
 	// エネミー
 	m_enemyTex.Release();
+
+	//m_enemyA->Release();
 
 	// マップ
 	m_mapTex.Release();
@@ -280,7 +314,7 @@ void Scene::ImGuiUpdate()
 			ImGui::Checkbox(":Debug", &m_debugFlg);
 
 			ImGui::Text("PBullet[%d] Item[%d]", m_player.GetBulletNum(), m_itemList.size());
-			ImGui::Text("EnemyFlg[0]:%d", (int)m_enemy.GetActive());
+			ImGui::Text("EnemyFlg[0]:%d", (int)m_enemy.GetFlg());
 			ImGui::SliderInt("beamNum", &beamNum, 0, 300, "%d");
 			ImGui::SliderFloat("beamDeg", &beamDeg, 0.0f, 720.0f);
 			break;

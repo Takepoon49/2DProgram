@@ -3,7 +3,7 @@
 
 void C_Enemy::Init()
 {
-	m_pos = { 100.0f, 100.0f };
+	m_pos = { 200.0f, 100.0f };
 	m_color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	m_color = { 0.95f, 0.2f, 0.2f, 1.0f };
 	m_dColor = C_RED;
@@ -13,7 +13,7 @@ void C_Enemy::Init()
 	m_rad = { m_AlphaRect.width * m_scale.x, m_AlphaRect.height * m_scale.y };
 	m_rad /= 2.75f;
 
-	m_flg = 0;
+	m_flg = st_alive;
 	m_bIsLock = false;
 }
 
@@ -21,11 +21,14 @@ void C_Enemy::Update()
 {
 	switch (m_flg)
 	{
-	case 0:
+	case BaseBitState::st_dead:
+
 		return;
-	case 1:
 		break;
-	case 2:
+	case BaseBitState::st_alive:
+
+		break;
+	case BaseBitState::st_stat1:
 		m_deg = -30.0f;
 		break;
 	}
@@ -39,7 +42,7 @@ void C_Enemy::Update()
 
 void C_Enemy::Draw()
 {
-	if (m_flg == 0) return;
+	if (m_flg == st_dead) return;
 
 	// •`‰æ
 	KdShaderManager::GetInstance().m_spriteShader.SetMatrix(m_mat.m);

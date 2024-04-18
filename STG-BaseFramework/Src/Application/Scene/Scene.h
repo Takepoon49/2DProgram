@@ -18,6 +18,8 @@ typedef unsigned int UINT;
 
 #include "../Object/Hit/Hit.h"
 
+class EnemyBase;
+
 enum SceneType
 {
 	S_Title,
@@ -63,12 +65,17 @@ private:
 
 	// アイテム
 	std::vector<C_Item*> m_itemList;
-	std::vector <C_Item*>::iterator m_item_it;
+	std::vector <C_Item*>::iterator m_itemIt;
 	KdTexture	m_itemTex;
 
 	// エネミー
 	C_Enemy		m_enemy;
 	KdTexture	m_enemyTex;
+
+	// 敵の可変長の継承
+	std::vector<EnemyBase*>	m_enemyAList;
+	std::vector <EnemyBase*>::iterator m_enemyAIt;
+	//std::shared_ptr<EnemyBase>	m_enemyA;
 
 	// マップ
 	C_Map		m_map;
@@ -86,7 +93,7 @@ public:
 	bool GetDebugFlg() { return m_debugFlg; }
 
 	// キーフラグ
-	bool GetKeyFlg(int num) { return keyFlg[key_End]; }
+	bool GetKeyFlg(int num) { return keyFlg[num]; }
 	void SetKeyFlg(int num, bool tf) { keyFlg[num] = tf; }
 
 	// 初期設定

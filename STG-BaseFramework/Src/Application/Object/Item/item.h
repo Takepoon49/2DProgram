@@ -12,9 +12,9 @@ public:
 
 	void Drop(Math::Vector2 a_pos, bool type);
 
-	UINT GetAlive() { return m_flg; }
+	UINT GetFlg() { return m_flg; }
 
-	void SetAlive(UINT a_alive);
+	void SetFlg(UINT a_alive);
 
 	void SetOwner(Scene* a_pOwner) { m_pOwner = a_pOwner; }
 

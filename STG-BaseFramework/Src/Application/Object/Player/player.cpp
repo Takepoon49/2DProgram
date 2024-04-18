@@ -185,7 +185,7 @@ void C_Player::Draw()
 	DrawSeeker();
 
 	// ’e
-	for (int b = 0; b < m_bulletList.size(); b++)
+	for (UINT b = 0; b < m_bulletList.size(); b++)
 	{
 		m_bulletList[b]->Draw();
 	}

@@ -48,8 +48,9 @@ enum EColor
 
 enum BaseBitState
 {
-	dead	= 0 << 0,		// 非アクティブ
-	alive	= 0 << 1,		// アクティブ
+	st_dead		= 0,				// 非アクティブ
+	st_alive	= 1 << 1,		// アクティブ
+	st_stat1	= 1 << 2,		// フラグ１
 
 };
 
