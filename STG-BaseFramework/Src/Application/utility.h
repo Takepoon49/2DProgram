@@ -45,7 +45,7 @@ enum E_keyFlg
 	k_end
 };
 
-enum Dir
+enum class Dir
 {
 	Up,
 	Down,

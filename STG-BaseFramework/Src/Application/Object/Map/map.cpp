@@ -17,7 +17,7 @@ void C_Map::Init()
 
 void C_Map::Update()
 {
-	m_BackPos.y -= 2.5f;
+	m_BackPos.y -= 6.0f;
 	if (m_BackPos.y < -360.0f) m_BackPos.y = 360.0f;
 
 	m_mat.s = Math::Matrix::CreateScale(m_scale.x, m_scale.y, 0.0f);

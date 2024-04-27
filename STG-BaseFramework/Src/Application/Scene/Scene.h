@@ -2,6 +2,8 @@
 
 #include "../utility.h"
 
+#include "../Object/Player/player.h"	// プレイヤー
+
 #include "../Object/Enemy/enemy/enemy.h"		// エネミー
 
 #include "../Object/Attack/Beam/beam0.h"	// ビーム
@@ -15,8 +17,6 @@
 #include "../Object/Hit/Hit.h"	// 当たり判定
 
 #include "../Object/UI/UI.h"	// UI
-
-class Player;
 
 class EnemyBase;
 class EnemyA;
@@ -53,7 +53,7 @@ private:
 	int	m_score;
 
 	// プレイヤー
-	std::shared_ptr<Player>		m_player;
+	Player		m_player;
 	int			m_playerNowAnimY = 0;
 	Math::Color m_playerColor = C_WHITE;
 
@@ -66,26 +66,17 @@ private:
 
 	// アイテム
 	std::vector<C_Item*> m_itemList;
-	std::vector <C_Item*>::iterator m_itemIt;
 	KdTexture	m_itemTex;
 
 	// エネミー
-	std::vector<C_Enemy*>	m_enemy;
+	std::vector<C_Enemy*>	m_enemyList;
 	KdTexture	m_enemyTex;
 
 	// 敵の可変長の継承
-	//std::vector<EnemyBase*>	m_enemyAList;
-	//std::vector <EnemyBase*>::iterator m_enemyAIt;
-
 	std::vector<EnemyA*>			m_enemyAList;
-	std::vector<EnemyA*>::iterator	m_enemyAIt;
-
-	//std::shared_ptr<EnemyBase>	m_enemyA;
 
 	// パーティクル
 	KdTexture	m_particleTex;
-	//std::vector<Explosion> m_explosionList;
-	//std::vector<Explosion>::iterator m_explosionIt;
 
 	// マップ
 	C_Map		m_map;
@@ -144,7 +135,7 @@ public:
 	void CreateEnemy(int _flg);
 
 	// ゲッター
-	std::shared_ptr<Player> GetPlayer() { return m_player; }
+	Player* GetPlayer() { return &m_player; }
 
 	C_Beam0* GetBeam() { return &m_beam; }
 	

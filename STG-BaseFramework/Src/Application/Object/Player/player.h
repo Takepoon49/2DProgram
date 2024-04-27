@@ -22,6 +22,10 @@ public:
 	void Update() override;
 	void Draw() override;
 
+	// 移動処理
+	void UpdateMove();	// X + 方向キーでローリング
+	void UpdateMove1();	// 方向キー二度押しでローリング（没）
+
 	// ウェブ
 	void DrawWebA();
 	void DrawWebB();
@@ -71,6 +75,15 @@ public:
 	// ウェブ
 	int				m_webMode;	// 0:拡散型 1:集中型
 
+	HitStruct GetWebBObj();
+
+	int GetRollFlg() { return m_roll.flg; }
+	float GetRollFrame1() { return m_roll.frame1; }
+
+private:
+
+	Scene* m_pOwner;
+
 	struct webStruct
 	{
 		bool			flg;
@@ -81,12 +94,6 @@ public:
 		float			degAdd;
 	};
 
-	HitStruct GetWebBObj();
-
-private:
-
-	Scene* m_pOwner;
-
 	// 拡散型ウェブ (A)
 	webStruct m_webA;
 
@@ -96,9 +103,10 @@ private:
 	// キーフラグ
 	bool keyFlg[k_end];
 
-	//KdTexture*		m_pTex;
-
 	// 自機
+	// 移動速度
+	float m_moveSpd = 7.5f;
+
 	Math::Rectangle	m_ownAlphaRect;			// 切り取り範囲
 	Math::Vector2	m_nowAnim;
 
@@ -108,14 +116,21 @@ private:
 	float			m_Hrad;					// 弾との当たり判定用半径
 	Math::Color		m_DebugColor;			// デバッグ用色
 
+	// ローリング
+	struct Roll
+	{
+		int		flg;		// ﾌﾗｸﾞ
+		Dir		dir;		// 方向
+		float	frame1;		// 入力用フレーム
+		float	frame2;		// 入力用フレーム
+		float	move;		// 移動量プラス用
+		int		cnt;		// キーのカウント用
+	}m_roll;
+
 	// シーカー
-	//int					m_SImgPosX = 100;
-	//int					m_SImgPosY = 106;
 	int						m_SImgPosX = 0;
 	int						m_SImgPosY = 128 * 2;
 
-	//static const int	m_SImgSizeX = 100;
-	//static const int	m_SImgSizeY = 100;
 	static const int	m_SImgSizeX = 128;
 	static const int	m_SImgSizeY = 128;
 

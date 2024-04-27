@@ -16,6 +16,7 @@ public:
 	// ÉQÉbÉ^Å[
 	Math::Vector2 GetPos() { return m_pos; }
 	Math::Vector2 GetMove() { return m_move; }
+	Math::Vector2 GetMoveVec() { return m_moveVec; }
 	Math::Vector2 GetScale() { return m_scale; }
 	Math::Vector2 GetRad() { return m_rad; }
 	float GetDeg() { return m_deg; }
@@ -44,6 +45,7 @@ protected:
 	int					m_flg;
 	Math::Vector2		m_pos;
 	Math::Vector2		m_move;
+	Math::Vector2		m_moveVec = Math::Vector2::Zero;
 	Math::Vector2		m_scale;
 	Math::Vector2		m_rad;
 	float				m_deg;

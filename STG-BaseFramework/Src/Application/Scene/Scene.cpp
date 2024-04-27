@@ -1,8 +1,6 @@
 #include "../main.h"
 #include "Scene.h"
 
-#include "../Object/Player/player.h"	// プレイヤー
-
 #include "../Object/Enemy/enemyA/enemyA.h"
 
 #include "../Object/Particle/explosion/explosion.h"
@@ -62,9 +60,9 @@ void Scene::DrawGame1()
 	{
 		(*_it)->Draw();
 	}*/
-	for (int i = 0; i < m_enemy.size(); i++)
+	for (int i = 0; i < m_enemyList.size(); i++)
 	{
-		m_enemy[i]->Draw();
+		m_enemyList[i]->Draw();
 	}
 
 	for (int i = 0; i < m_enemyAList.size(); i++)
@@ -73,7 +71,7 @@ void Scene::DrawGame1()
 	}
 
 	// 自機
-	m_player->Draw();
+	m_player.Draw();
 
 	// UI
 	m_UI.Draw();
@@ -93,6 +91,7 @@ void Scene::DrawString(SceneType nowScene)
 
 	case SceneType::Game1:
 		sprintf_s(nowSceneStr, sizeof(nowSceneStr), "SCORE:%06d", m_score);
+		DrawMoji(250 + 3, 360 - 30 - 3, nowSceneStr, &Math::Color(0.0f, 0.0f, 0.0f, 1.0f));
 		DrawMoji(250, 360 - 30, nowSceneStr, &Math::Color(1.0f, 1.0f, 1.0f, 1.0f));
 		break;
 
@@ -118,7 +117,7 @@ void Scene::CreateEnemy(int _flg)
 	enemy->SetBullet1Tex(&m_bullet0Tex);
 	enemy->SetParticleTex(&m_particleTex);
 	enemy->SetUITex(&m_UITex);
-	m_enemy.push_back(enemy);
+	m_enemyList.push_back(enemy);
 }
 
 void Scene::Update()
@@ -164,30 +163,32 @@ void Scene::UpdateTitle()
 
 void Scene::CheckGame1Vec()
 {
-	m_itemIt = m_itemList.begin();
-	while (m_itemIt != m_itemList.end())
+	std::vector<C_Item*>::iterator _itemIt;
+	_itemIt = m_itemList.begin();
+	while (_itemIt != m_itemList.end())
 	{
-		const bool bAlive = (*m_itemIt)->GetFlg();
+		const bool bAlive = (*_itemIt)->GetFlg();
 		if (!bAlive)
 		{
-			delete (*m_itemIt);
-			m_itemIt = m_itemList.erase(m_itemIt);
+			delete (*_itemIt);
+			_itemIt = m_itemList.erase(_itemIt);
 		}
 		else
 		{
-			m_itemIt++;
+			_itemIt++;
 		}
 	}
 
-	m_enemyAIt = m_enemyAList.begin();
+	std::vector<EnemyA*>::iterator _enemyAIt;
+	_enemyAIt = m_enemyAList.begin();
 	if (GetAsyncKeyState('O') & 0x8000)
 	{
 		if (!keyFlg['O'])
 		{
 			if (m_enemyAList.size() > 0)
 			{
-				delete (*m_enemyAIt);
-				m_enemyAIt = m_enemyAList.erase(m_enemyAIt);
+				delete (*_enemyAIt);
+				_enemyAIt = m_enemyAList.erase(_enemyAIt);
 			}
 			keyFlg['O'] = true;
 		}
@@ -197,17 +198,18 @@ void Scene::CheckGame1Vec()
 		keyFlg['O'] = false;
 	}
 
-	while (m_enemyAIt != m_enemyAList.end())
+	_enemyAIt = m_enemyAList.begin();
+	while (_enemyAIt != m_enemyAList.end())
 	{
-		const int bFlg = (*m_enemyAIt)->GetFlg();
+		const int bFlg = (*_enemyAIt)->GetFlg();
 		if (bFlg & st_dead)
 		{
-			delete (*m_enemyAIt);
-			m_enemyAIt = m_enemyAList.erase(m_enemyAIt);
+			delete (*_enemyAIt);
+			_enemyAIt = m_enemyAList.erase(_enemyAIt);
 		}
 		else
 		{
-			m_enemyAIt++;
+			_enemyAIt++;
 		}
 	}
 }
@@ -260,7 +262,7 @@ void Scene::UpdateGame1()
 	}
 	if (GetAsyncKeyState('2') & 0x8000)
 	{
-		m_enemyAList[0]->ShootToPlayer(m_player->GetPos());
+		m_enemyAList[0]->ShootToPlayer(m_player.GetPos());
 	}
 	//for (int i = 0; i < m_enemy.size(); i++)
 	//{
@@ -288,7 +290,7 @@ void Scene::UpdateGame1()
 		m_itemList[i]->Update();
 
 		// プレイヤーとアイテムの当たり判定
-		if (m_hit.HitObjCircle(m_player->GetObj(), m_itemList[i]->GetObj()))
+		if (m_hit.HitObjCircle(m_player.GetObj(), m_itemList[i]->GetObj()))
 		{
 			//m_player.SetB
 
@@ -297,7 +299,7 @@ void Scene::UpdateGame1()
 	}
 
 	// 自機
-	m_player->Update();
+	m_player.Update();
 
 	// シーカー当たり判定
 	//if (m_hit.HitObjBox(m_player.GetSeekObj(), m_enemy.GetObj()))
@@ -311,36 +313,36 @@ void Scene::UpdateGame1()
 	}
 
 	// 弾と敵の当たり判定
-	for (int i = 0; i < m_player->GetBulletNum(); i++)
+	for (int i = 0; i < m_player.GetBulletNum(); i++)
 	{
-		if (m_player->GetBulletFlg(i) == 2) continue;
+		if (m_player.GetBulletFlg(i) == 2) continue;
 
 		//if (m_player.GetBulletObj(i).pos.y > 200.0f)
 		//{
 		//	m_player.SetBulletActive(i, false);
 		//}
-		for (int j = 0; j < m_enemy.size(); j++)
+		for (int j = 0; j < m_enemyList.size(); j++)
 		{
-			if (m_enemy[j]->GetFlg() & st_alive)
+			if (m_enemyList[j]->GetFlg() & st_alive)
 			{
-				if (m_hit.HitObjBox(m_player->GetBulletObj(i), m_enemy[j]->GetObj()))
+				if (m_hit.HitObjBox(m_player.GetBulletObj(i), m_enemyList[j]->GetObj()))
 				{
-					m_player->SetBulletFlg(i, 2);
+					m_player.SetBulletFlg(i, 2);
 					m_score += 10;
-					m_enemy[j]->m_hp -= 1;
+					m_enemyList[j]->m_hp -= 1;
 					break;
 				}
 			}
 		}
 	}
 	// ウェブと敵の当たり判定
-	for (int e = 0; e < m_enemy.size(); e++)
+	for (int e = 0; e < m_enemyList.size(); e++)
 	{
-		if (!m_enemy[e]->GetbLock() && m_enemy[e]->GetFlg())
+		if (!m_enemyList[e]->GetbLock() && m_enemyList[e]->GetFlg())
 		{
-			if (m_hit.HitObjBox(m_player->GetWebBObj(), m_enemy[e]->GetObj()))
+			if (m_hit.HitObjBox(m_player.GetWebBObj(), m_enemyList[e]->GetObj()))
 			{
-				m_enemy[e]->SetbLock(true);
+				m_enemyList[e]->SetbLock(true);
 				//m_enemy[e]->SetFlg(st_dead);
 			}
 		}
@@ -348,10 +350,10 @@ void Scene::UpdateGame1()
 
 	// エネミー更新
 	std::vector<C_Enemy*>::iterator _it;
-	_it = m_enemy.begin();
-	while (_it != m_enemy.end())
+	_it = m_enemyList.begin();
+	while (_it != m_enemyList.end())
 	{
-		(*_it)->Update(m_player->GetPos());
+		(*_it)->Update(m_player.GetPos());
 		_it++;
 	}
 	// エネミーA更新
@@ -405,14 +407,13 @@ void Scene::InitGame1()
 	m_particleTex.Load("Data/Texture/Particle/effect0.png");
 
 	// プレイヤー
-	m_player = std::make_shared<Player>();
-	m_player->Init();
-	m_player->SetOwner(this);
-	m_player->SetTexture("Data/Texture/Player/player128x128.png");
+	m_player.Init();
+	m_player.SetOwner(this);
+	m_player.SetTexture("Data/Texture/Player/player128x128.png");
 
 	// 弾
 	m_bullet0Tex.Load("Data/Texture/Bullet/bullet-100x100.png");
-	m_player->SetBullet0Tex(&m_bullet0Tex);
+	m_player.SetBullet0Tex(&m_bullet0Tex);
 
 	// ビーム0
 	m_beam.SetOwner(this);
@@ -503,17 +504,18 @@ void Scene::ImGuiUpdate()
 		ImGui::SameLine();
 		ImGui::Text("FPS:%d|Scene:%s", APP.m_fps, nowSceneStr);
 
-		Math::Vector4 _DebugColor = m_player->GetDebugColor();
+		Math::Vector4 _DebugColor = m_player.GetDebugColor();
 
 		switch (m_debugNowPage)
 		{
 		case 0:
 			ImGui::Text(u8"いろいろ");
 			ImGui::Checkbox(":Debug", &m_debugFlg);
-			ImGui::Text("PBullet[%d] Item[%d]", m_player->GetBulletNum(), m_itemList.size());
-			ImGui::Text("Enemy.size[%d]", m_enemy.size());
-			ImGui::Text("EnemyFlg[0]:%d HP:%d", (int)m_enemy[0]->GetFlg(), m_enemy[0]->m_hp);
-			ImGui::Text("PShootFlg:%d PShootTime:%d", m_player->GetShootFlg(), m_player->GetShootTime());
+			ImGui::Text("roll.flg:%d frame:%.1f", m_player.GetRollFlg(), m_player.GetRollFrame1());
+			ImGui::Text("PBullet[%d] Item[%d]", m_player.GetBulletNum(), m_itemList.size());
+			ImGui::Text("Enemy.size[%d]", m_enemyList.size());
+			ImGui::Text("EnemyFlg[0]:%d HP:%d", (int)m_enemyList[0]->GetFlg(), m_enemyList[0]->m_hp);
+			ImGui::Text("PShootFlg:%d PShootTime:%d", m_player.GetShootFlg(), m_player.GetShootTime());
 			ImGui::Text("EnemyA.size:%d", m_enemyAList.size());
 			ImGui::SliderInt("beamNum", &beamNum, 0, 300, "%d");
 			ImGui::SliderFloat("beamDeg", &beamDeg, 0.0f, 720.0f);
@@ -521,12 +523,14 @@ void Scene::ImGuiUpdate()
 
 		case 1:
 			ImGui::Text(u8"[プレイヤー関連]");
+			// プレイヤーの移動速度
+			ImGui::Text("moveVec : %.2f, %.2f", m_player.GetMoveVec().x, m_player.GetMoveVec().y);
 			// プレイヤー切り取り範囲
 			ImGui::SliderInt("PNowAnimY", &m_playerNowAnimY, 0, 9);
-			m_player->SetNowAnimY(m_playerNowAnimY);
+			m_player.SetNowAnimY(m_playerNowAnimY);
 			// プレイヤーの色
 			ImGui::ColorEdit4("PlayerColor", &m_playerColor.x);
-			m_player->SetPColor(m_playerColor);
+			m_player.SetPColor(m_playerColor);
 
 			break;
 
@@ -538,7 +542,7 @@ void Scene::ImGuiUpdate()
 			ImGui::SliderFloat("DebugColor:B", &_DebugColor.z, 0.0f, 1.0f);
 			ImGui::SliderFloat("DebugColor:A", &_DebugColor.w, 0.0f, 1.0f);
 
-			//ImGui::Text("webA.deg:%.2f", m_player->m_webA.degMove);
+			//ImGui::Text("webA.deg:%.2f", m_player.m_webA.degMove);
 			break;
 		
 		case 3:

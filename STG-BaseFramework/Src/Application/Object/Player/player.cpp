@@ -31,6 +31,14 @@ void Player::Init()
 	m_color	= { 0.70f, 0.70f, 0.70f, 1.0f };
 	//m_color	= { 0.1f, 0.80f, 0.80f, 1.0f };
 
+	// ローリング
+	m_roll.flg = 0;
+	m_roll.dir = Dir::Left;
+	m_roll.frame1 = 0.0f;
+	m_roll.frame2 = 0.0f;
+	m_roll.move = 0.0f;
+	m_roll.cnt = 0;
+
 	// シーカー
 	m_spos		= { 0.0f, 0.0f };
 	m_sscale	= { 0.75f, 0.75f };
@@ -103,20 +111,21 @@ void Player::Update()
 	m_frame++;
 	if (m_frame >= 360) m_frame = 0;
 
-	m_DebugColor = { 1.0f, 0.5f + (fabs(sin(DirectX::XMConvertToRadians(m_frame * 7)))) * 0.5f, 0.0f, 0.8f };
+	//m_DebugColor = { 1.0f, 0.5f + (fabs(sin(DirectX::XMConvertToRadians(m_frame * 7)))) * 0.5f, 0.0f, 0.8f };
+	m_DebugColor = { 0.0f, 1.0f, 0.5f + (fabs(sin(DirectX::XMConvertToRadians(m_frame * 7)))) * 0.5f, 0.8f };
 	//m_DebugColor = { 1.0f, 0.0f, 0.6f + (fabs(sin(DirectX::XMConvertToRadians(m_frame * 15)))) * 0.4f, 0.6f };
 	//m_DebugColor = { sin(DegToRad(m_frame * 6)), sin(DegToRad(180 + m_frame * 6)), 1.0f, 0.8f};
 	//m_DebugColor = { sin(DegToRad(m_frame * 5)), sin(DegToRad(180 + m_frame * 5)), 1.0f, 1.0f};
 	//m_DebugColor = { 0.0f, 1.0f, 1.0f, 1.0f };
 
-	m_move = { 0.0f, 0.0f };
-
 	UpdateAttack();
 
 	// 移動入力
-	if (GetKey(VK_UP)) m_move.y = +m_speed.y;
+	m_moveSpd = 7.5f;
+	m_moveVec = { 0.0f, 0.0f };
+	UpdateMove();
 
-	if (GetKey(VK_DOWN)) m_move.y = -m_speed.y;
+	m_moveVec *= m_moveSpd;
 
 	if (GetKey(VK_LEFT))
 	{
@@ -125,7 +134,7 @@ void Player::Update()
 			if (m_webB.degAdd < 35.0f) m_webB.degAdd += 1.5f;
 		}
 
-		m_move.x = -m_speed.x;			// 移動量：左
+		//m_move.x = -m_speed.x;			// 移動量：左
 
 		m_nowAnim.x = 8.0f;				// 傾き：左
 	}
@@ -136,7 +145,7 @@ void Player::Update()
 			if (m_webB.degAdd > -35.0f) m_webB.degAdd -= 1.5f;
 		}
 
-		m_move.x = +m_speed.x;			// 移動量：右
+		//m_move.x = +m_speed.x;			// 移動量：右
 		
 		m_nowAnim.x = 1.0f;				// 傾き : 右
 	}
@@ -155,11 +164,11 @@ void Player::Update()
 	}
 
 	// 端判定
-	if (m_pos.x + m_move.x > scrRight - m_rad.x || m_pos.x + m_move.x < scrLeft + m_rad.x) m_move.x = 0;
-	if (m_pos.y + m_move.y > scrTop - m_rad.y || m_pos.y + m_move.y < scrBottom + m_rad.y) m_move.y = 0;
+	if (m_pos.x + m_moveVec.x > scrRight - m_rad.x || m_pos.x + m_moveVec.x < scrLeft + m_rad.x) m_moveVec.x = 0;
+	if (m_pos.y + m_moveVec.y > scrTop - m_rad.y || m_pos.y + m_moveVec.y < scrBottom + m_rad.y) m_moveVec.y = 0;
 	
 	// 移動量合成
-	m_pos += m_move;
+	m_pos += m_moveVec;
 
 	// ウェブ更新
 	// A
@@ -196,6 +205,9 @@ void Player::Draw()
 	//行列の初期化 (図形描画の前に書く)
 	SHADER.m_spriteShader.SetMatrix(DirectX::XMMatrixIdentity());
 
+	// ローリングクールタイム
+	DrawBar(m_pos.x - m_rad.x, m_pos.y + 50.0f, 50.0f, 7.5f, m_roll.frame1, 45.0f, &m_DebugColor, true, Dir::Right);
+
 	// 拡散型
 	DrawWebA();
 
@@ -229,6 +241,179 @@ void Player::Draw()
 		DrawMaru(m_pos.x, m_pos.y, m_rad.x, &m_DebugColor, false);
 		DrawMaru(m_pos.x, m_pos.y, m_Hrad, &m_DebugColor, false);
 		SHADER.m_spriteShader.DrawBox((int)m_pos.x, (int)m_pos.y, (int)m_rad.x, (int)m_rad.y, &m_DebugColor, false);
+	}
+}
+
+void Player::UpdateMove()
+{
+	switch (m_roll.flg)
+	{
+	case 0:	// 通常移動、Xで方向キー待機
+		if (GetAsyncKeyState(VK_UP) & 0x8000)
+		{
+			m_moveVec.y = 0.8f;
+		}
+		if (GetAsyncKeyState(VK_DOWN) & 0x8000)
+		{
+			m_moveVec.y = -0.8f;
+		}
+		if (GetAsyncKeyState(VK_LEFT) & 0x8000)
+		{
+			m_moveVec.x = -1.0f;
+		}
+		if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
+		{
+			m_moveVec.x = 1.0f;
+		}
+
+		if (m_roll.frame1 > 0.0f)
+		{
+			m_roll.frame1 -= 1.0f;
+		}
+
+		// 移動入力がされてなければ
+		if (m_moveVec == Math::Vector2::Zero)
+		{
+			if (GetAsyncKeyState('X') & 0x8000)
+			{
+				if (m_roll.frame1 <= 0.0f)
+				{
+					m_roll.flg = 1;
+				}
+			}
+		}
+		break;
+
+	case 1:
+		if (GetAsyncKeyState('X') & 0x8000)
+		{
+			m_roll.flg = 1;
+		}
+		else
+		{
+			m_roll.flg = 0;
+		}
+
+		if (GetAsyncKeyState(VK_LEFT) & 0x8000)
+		{
+			m_roll.dir = Dir::Left;
+			m_roll.flg = 2;
+			m_roll.frame1 = 0.0f;
+		}
+		else if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
+		{
+			m_roll.dir = Dir::Right;
+			m_roll.flg = 2;
+			m_roll.frame1 = 0.0f;
+		}
+		else if (GetAsyncKeyState(VK_UP) & 0x8000)
+		{
+			m_moveVec.y = 1.0f;
+		}
+		else if (GetAsyncKeyState(VK_DOWN) & 0x8000)
+		{
+			m_moveVec.y = -1.0f;
+		}
+		break;
+
+	case 2:
+		if (m_roll.frame1 <= 8.0f)
+		{
+			m_roll.frame1 += 1.0f;
+
+			switch (m_roll.dir)
+			{
+			case Dir::Up:
+				break;
+			case Dir::Down:
+				break;
+			case Dir::Left:
+				m_moveVec = { -1.75f, 0.0f };
+				break;			
+			case Dir::Right:
+				m_moveVec = { +1.75f, 0.0f };
+				break;
+			}
+		}
+		else
+		{
+			m_roll.flg = 0;
+			m_roll.frame1 = 45.0f;
+		}
+		break;
+	}
+}
+
+void Player::UpdateMove1()
+{
+	switch (m_roll.flg)
+	{
+	case 0:
+	case 1:
+		if (GetAsyncKeyState(VK_UP) & 0x8000)
+		{
+			m_moveVec.y = 1.0f;
+		}
+		if (GetAsyncKeyState(VK_DOWN) & 0x8000)
+		{
+			m_moveVec.y = -1.0f;
+		}
+		if (GetAsyncKeyState(VK_LEFT) & 0x8000)
+		{
+			m_moveVec.x = -1.0f;
+		}
+		if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
+		{
+			m_moveVec.x = 1.0f;
+		}
+		break;
+
+	case 2:
+		m_moveVec = { 2.0f, 0.0f };
+
+		m_roll.frame1 += 1.0f;
+		if (m_roll.frame1 > 10.0f)
+		{
+			m_roll.frame1 = 0.0f;
+			m_roll.flg = 0;
+		}
+
+		break;
+	}
+
+	switch (m_roll.flg)
+	{
+	case 1:
+		if (m_roll.frame2 <= 13.0f)
+		{
+			m_roll.frame2 += 1.0f;
+		}
+		else
+		{
+			m_roll.frame2 = 0.0f;
+			m_roll.flg = 0;
+		}
+		break;
+	}
+
+	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
+	{
+		if (!keyFlg[k_right])
+		{
+			if (m_roll.flg == 0)
+			{
+				m_roll.flg = 1;
+			}
+			else if (m_roll.flg == 1)
+			{
+				m_roll.flg = 2;
+			}
+		}
+		keyFlg[k_right] = true;
+	}
+	else
+	{
+		keyFlg[k_right] = false;
 	}
 }
 
@@ -416,7 +601,7 @@ void Player::UpdateAttack()
 
 	// ウェブ展開
 	// 拡散型
-	if (GetKey('X'))
+	if (GetKey('S'))
 	{
 		if (m_webA.size <= 300.0f)
 		{
