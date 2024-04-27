@@ -6,24 +6,27 @@ class EnemyBase
 {
 public:
 
-	EnemyBase() {}
-	virtual ~EnemyBase() {}
+	EnemyBase() { Init(); }
+	virtual ~EnemyBase() { Release(); }
 
 	virtual void Update();
 	virtual void Draw();
 	virtual void Init();
-	virtual void Release();
 
-	void SetTexture(std::string _fileName);
-
-	bool GetFlg() { return m_flg; }
+	// Ç∞Ç¡ÇΩÅ[
+	int GetFlg() { return m_flg; }
+	Math::Vector2 GetPos() { return m_pos; }
+	Math::Vector2 GetRad() { return m_rad; }
 
 protected:
+
+	virtual void Release();
 
 	KdTexture			m_tex;
 
 	Math::Rectangle		m_rect;
 
+	int					m_hp;
 	int					m_flg;
 	Math::Vector2		m_pos;
 	Math::Vector2		m_move;

@@ -1,5 +1,8 @@
 #pragma once
+
+#include "../BaseObject.h"
 #include "../Attack/Bullet/bullet0.h"
+#include "../Attack/H-Laser/H-Laser.h"
 
 struct LockOn
 {
@@ -7,78 +10,115 @@ struct LockOn
 	bool			bActive;
 };
 
-class Scene;
-
-class C_Player
+class Player :public BaseObject
 {
 public:
 
-	C_Player() {}
-	~C_Player() {}
+	Player() {};
+	~Player() { Release(); };
 
-	void Init();
+	void Init() override;
 	void CheckVec();
-	void Update();
-	void Draw();
+	void Update() override;
+	void Draw() override;
+
+	// ウェブ
+	void DrawWebA();
+	void DrawWebB();
+
+	Math::Color GetDebugColor() { return m_DebugColor; }
 	
 	// シーカー
 	void UpdateSeeker();
 	void DrawSeeker();
 
-	// セッター
-	void SetPlayerTex(KdTexture* a_pTex) { m_pTex = a_pTex; }
+	// 攻撃系
+	void UpdateAttack();
 
+	// セッター
+	// 切り取り範囲
+	void SetNowAnimY(int _animY) { m_nowAnim.y = (int)_animY; }
+	// 自機色
+	void SetPColor(Math::Color _color) { m_color = _color; }
+
+	//void SetPlayerTex(KdTexture* a_pTex) { m_pTex = a_pTex; }
+	void SetBullet0Tex(KdTexture* a_pTex) { m_pBullet0Tex = a_pTex; }
 	void SetPDeg(float deg) { m_deg = deg; }
 
 	// ゲッター
 	float GetPDeg() { return m_deg; }
 
 	// 弾
-	void CreateBullet(Math::Vector2 a_pos, bool a_num);
-	
+	void CreateBullet(Math::Vector2 a_pos);
+	void CreateBullet(float _x, float _y);
+
 	int GetBulletNum() { return m_bulletList.size(); }
-	
-	bool GetBulletFlg(int num) { return m_bulletList[num]->GetFlg(); }
-	
+	int GetBulletFlg(int num) { return m_bulletList[num]->GetFlg(); }
+
+	int GetShootTime() { return m_shootTime; }
+	int GetShootFlg() { return m_shootFlg; }
+
 	HitStruct GetBulletObj(int num) { return m_bulletList[num]->GetObj(); }
-	
-	void SetBullet0Tex(KdTexture* a_pTex) { m_pBullet0Tex = a_pTex; }
-	void SetBulletFlg(int num, bool a_bActive) { m_bulletList[num]->SetFlg(a_bActive); }
+
+	//void SetBullet0Tex(KdTexture* a_pTex) { m_pBullet0Tex = a_pTex; }
+	void SetBulletFlg(int num, int _flg) { m_bulletList[num]->SetFlg(_flg); }
 
 	void SetOwner(Scene* a_pOwner) { m_pOwner = a_pOwner; }
 
 	HitStruct GetObj();		// 自機当たり判定用
 	HitStruct GetSeekObj();	// シーカー当たり判定用
 
+	// ウェブ
+	int				m_webMode;	// 0:拡散型 1:集中型
+
+	struct webStruct
+	{
+		bool			flg;
+		Math::Vector2	pos;
+		float			size;
+		float			sizeXAdd;
+		float			degMove;
+		float			degAdd;
+	};
+
+	HitStruct GetWebBObj();
+
 private:
 
 	Scene* m_pOwner;
 
-	KdTexture* m_pTex;
+	// 拡散型ウェブ (A)
+	webStruct m_webA;
 
-	keynum KeyNum;
+	//集中型ウェブ (B)
+	webStruct m_webB;
+
+	// キーフラグ
+	bool keyFlg[k_end];
+
+	//KdTexture*		m_pTex;
 
 	// 自機
-	UINT			m_flg;					// 状態管理フラグ
-
 	Math::Rectangle	m_ownAlphaRect;			// 切り取り範囲
+	Math::Vector2	m_nowAnim;
 
-	Math::Vector2	m_pos;					// 座標
-	Math::Vector2	m_move;					// 移動量
+	int				m_frame;
+
 	Math::Vector2	m_speed;				// 移動量に入れる値
-	Math::Vector2	m_scale;				// 拡大率
-	Math::Vector2	m_rad;					// 端との当たり判定用半径
 	float			m_Hrad;					// 弾との当たり判定用半径
-	float			m_deg;					// 角度
-	MathSet			m_mat;					// 行列
-	Math::Color		m_color;				// 色
 	Math::Color		m_DebugColor;			// デバッグ用色
 
 	// シーカー
-	UINT				m_SImgPosX = 100;
-	UINT				m_SImgPosY = 106;
-	static const int	m_SImgSizeX = 100;
-	static const int	m_SImgSizeY = 100;
+	//int					m_SImgPosX = 100;
+	//int					m_SImgPosY = 106;
+	int						m_SImgPosX = 0;
+	int						m_SImgPosY = 128 * 2;
+
+	//static const int	m_SImgSizeX = 100;
+	//static const int	m_SImgSizeY = 100;
+	static const int	m_SImgSizeX = 128;
+	static const int	m_SImgSizeY = 128;
+
 	Math::Vector2		m_spos;			// 座標
 	Math::Vector2		m_sscale;		// 大きさ
 	float				m_sdeg;			// 角度
@@ -93,23 +133,10 @@ private:
 	// 弾(可変長)
 	KdTexture* m_pBullet0Tex;
 	std::vector<C_Bullet0*> m_bulletList;
-	std::vector<C_Bullet0*>::iterator it;
 
-	float m_bulletTime;
+	int		m_shootFlg;
+	int		m_shootTime;
 
-
-	// ウェブ
-	UINT			webMode;	// 0:拡散型 1:集中型
-
-	// 拡散型ウェブ (A)
-	bool			Aflg;		// 
-	float			Aradius;		// 
-	
-	// 集中型ウェブ (B)
-	bool			Bflg;		// 
-	float			Bsize;	// 
-
-
-	bool GetKeyFlg(int num);
-	void SetKeyFlg(int num, bool tf);
+	// 追尾レーザー
+	HLaser	m_hLaser;
 };

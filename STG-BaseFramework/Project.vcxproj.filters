@@ -73,6 +73,27 @@
     <Filter Include="Src\Application\Object\Attack\Beam-0">
       <UniqueIdentifier>{f28b3428-6916-4c57-988d-20c914301fd1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\Object\Particle">
+      <UniqueIdentifier>{6a54052e-82a1-47c1-bb54-a508d80ed38a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Object\Enemy\enemy">
+      <UniqueIdentifier>{ea477c89-b6a3-4809-9226-fbce5737cf22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Object\Enemy\enemyA">
+      <UniqueIdentifier>{46a014b9-7d5b-4e19-9ad7-a4592561e242}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Object\Particle\explosion">
+      <UniqueIdentifier>{002e6ad3-678b-48dd-b0b7-7505d20e5956}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Object\Attack\E-Bullet-0">
+      <UniqueIdentifier>{dc28e681-d2ba-4d40-b3c0-40ff2b75fcf9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Object\UI">
+      <UniqueIdentifier>{5cbe292f-b178-493a-a44c-2f070036a7cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Object\Attack\H-Laser">
+      <UniqueIdentifier>{ba885274-9629-4f5c-8479-4eca8d142fee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -180,9 +201,6 @@
     <ClInclude Include="Src\Application\Object\Hit\Hit.h">
       <Filter>Src\Application\Object\Hit</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\Object\Enemy\enemy.h">
-      <Filter>Src\Application\Object\Enemy</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Application\Object\Attack\Bullet\bullet0.h">
       <Filter>Src\Application\Object\Attack\Bullet-0</Filter>
     </ClInclude>
@@ -198,8 +216,26 @@
     <ClInclude Include="Src\Application\Object\Enemy\EnemyBase.h">
       <Filter>Src\Application\Object\Enemy</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\Object\Enemy\enemyA.h">
-      <Filter>Src\Application\Object\Enemy</Filter>
+    <ClInclude Include="Src\Application\Object\Particle\ParticleBase.h">
+      <Filter>Src\Application\Object\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Object\Enemy\enemy\enemy.h">
+      <Filter>Src\Application\Object\Enemy\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Object\Enemy\enemyA\enemyA.h">
+      <Filter>Src\Application\Object\Enemy\enemyA</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Object\Particle\explosion\explosion.h">
+      <Filter>Src\Application\Object\Particle\explosion</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Object\Attack\Bullet1\bullet1.h">
+      <Filter>Src\Application\Object\Attack\E-Bullet-0</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Object\UI\UI.h">
+      <Filter>Src\Application\Object\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Object\Attack\H-Laser\H-Laser.h">
+      <Filter>Src\Application\Object\Attack\H-Laser</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -278,9 +314,6 @@
     <ClCompile Include="Src\Application\Object\Hit\Hit.cpp">
       <Filter>Src\Application\Object\Hit</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Application\Object\Enemy\enemy.cpp">
-      <Filter>Src\Application\Object\Enemy</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Application\Object\Attack\Bullet\bullet0.cpp">
       <Filter>Src\Application\Object\Attack\Bullet-0</Filter>
     </ClCompile>
@@ -296,8 +329,26 @@
     <ClCompile Include="Src\Application\Object\Enemy\EnemyBase.cpp">
       <Filter>Src\Application\Object\Enemy</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Application\Object\Enemy\enemyA.cpp">
-      <Filter>Src\Application\Object\Enemy</Filter>
+    <ClCompile Include="Src\Application\Object\Particle\ParticleBase.cpp">
+      <Filter>Src\Application\Object\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Object\Enemy\enemy\enemy.cpp">
+      <Filter>Src\Application\Object\Enemy\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Object\Enemy\enemyA\enemyA.cpp">
+      <Filter>Src\Application\Object\Enemy\enemyA</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Object\Particle\explosion\explosion.cpp">
+      <Filter>Src\Application\Object\Particle\explosion</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Object\Attack\Bullet1\bullet1.cpp">
+      <Filter>Src\Application\Object\Attack\E-Bullet-0</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Object\UI\UI.cpp">
+      <Filter>Src\Application\Object\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Object\Attack\H-Laser\H-Laser.cpp">
+      <Filter>Src\Application\Object\Attack\H-Laser</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

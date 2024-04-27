@@ -3,6 +3,7 @@
 #define C_RED Math::Color(1.0f, 0.0f, 0.0f, 1.0f);
 #define C_GREEN Math::Color(0.0f, 1.0f, 0.0f, 1.0f);
 #define C_BLUE Math::Color(0.0f, 0.0f, 1.0f, 1.0f);
+#define C_YELLOW Math::Color(1.0f, 1.0f, 0.0f, 1.0f);
 #define C_BLACK Math::Color(0.0f, 0.0f, 0.0f, 1.0f);
 #define C_WHITE Math::Color(1.0f, 1.0f, 1.0f, 1.0f);
 #define C_SELECTR Math::Color(1.0f, 0.7f, 0.7f, 1.0f);
@@ -17,18 +18,31 @@ static const float scrRight = scrWidth / 2;
 static const float scrTop = scrHeight / 2;
 static const float scrBottom = -scrHeight / 2;
 
-enum keynum
+enum E_keyFlg
 {
-	key_I,
-	key_M,
-	key_Left,
-	key_Right,
-	key_Up,
-	key_Down,
-	key_LBUTTON,
-	key_RBUTTON,
-	key_MBUTTON,
-	key_End
+	k_tab,
+	k_shift,
+	k_z,
+	k_x,
+	k_c,
+	k_up,
+	k_down,
+	k_left,
+	k_right,
+	k_np_0,
+	k_np_1,
+	k_np_2,
+	k_np_3,
+	k_np_4,
+	k_np_5,
+	k_np_6,
+	k_np_7,
+	k_np_8,
+	k_np_9,
+	k_any1,	// ctrl + '-'
+	k_any2,
+	k_any3,
+	k_end
 };
 
 enum Dir
@@ -46,33 +60,19 @@ enum EColor
 	blue
 };
 
+enum EParticle
+{
+	Pa_BulletHit,
+	Pa_Bomb1,
+	Pa_End
+};
+
 enum BaseBitState
 {
 	st_dead		= 0,				// 非アクティブ
 	st_alive	= 1 << 1,		// アクティブ
 	st_stat1	= 1 << 2,		// フラグ１
 
-};
-
-struct image
-{
-	Math::Vector2 pos;
-	Math::Vector2 move;
-	Math::Vector2 size;
-	float		  deg;
-
-	Math::Matrix  smat;
-	Math::Matrix  rmat;
-	Math::Matrix  tmat;
-	Math::Matrix  mat;
-	KdTexture*	  Tex1;
-	KdTexture*	  Tex2;
-};
-
-struct ImgPosSize
-{
-	Math::Vector2	pos;
-	Math::Vector2	size;
 };
 
 struct MathSet
@@ -84,6 +84,23 @@ struct MathSet
 
 	void			Init();
 	Math::Matrix	Mix();
+};
+
+struct image
+{
+	Math::Vector2 pos;
+	Math::Vector2 move;
+	Math::Vector2 size;
+	float		  deg;
+
+	MathSet		  mat;
+	KdTexture	  tex;
+};
+
+struct ImgPosSize
+{
+	Math::Vector2	pos;
+	Math::Vector2	size;
 };
 
 struct HitStruct
