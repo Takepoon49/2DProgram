@@ -6,7 +6,7 @@ class BaseObject
 {
 public:
 
-	BaseObject() {}
+	BaseObject();
 	virtual	~BaseObject() { Release(); }
 
 	virtual void Update();

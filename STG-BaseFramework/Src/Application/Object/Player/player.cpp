@@ -1,9 +1,14 @@
 #include "../../Scene/Scene.h"
 #include "player.h"
 
-void Player::Init()
+Player::Player()
 {
+	m_pOwner = nullptr;
+	m_pBullet0Tex = nullptr;
+
 	// キーフラグ
+	keyFlg[0] = false;
+
 	for (auto& i : keyFlg)
 	{
 		i = false;
@@ -15,21 +20,27 @@ void Player::Init()
 	// 自機
 	m_rect = {};
 	m_ownAlphaRect = { 0, 0, 128, 128 };
-	m_nowAnim = { 0.0f, 0.0f };
+	m_nowAnim = { 0.0f, 1.0f };
 
-	m_flg	= false;
-	m_pos	= { 0.0f, -200.0f };
-	m_move	= { 0.0f, 0.0f };
+	m_flg = false;
+	m_pos = { 0.0f, -250.0f };
+	m_move = { 0.0f, 0.0f };
 	m_speed = { 7.5f, 7.5f };
-	m_scale	= { 0.70f, 0.70f };
-	m_scale	= { 0.70f, 0.70f };
-	m_rad	= { m_ownAlphaRect.width * m_scale.x, m_ownAlphaRect.height * m_scale.y };
-	m_rad	= { m_rad.x / 3.0f, m_rad.y / 2.5f };
-	m_Hrad	= 15.0f;
-	m_deg	= 0.0f;
-	m_color	= { 0.15f, 0.95f, 0.15f, 1.0f };
-	m_color	= { 0.70f, 0.70f, 0.70f, 1.0f };
+	m_scale = { 0.70f, 0.70f };
+	m_scale = { 0.70f, 0.70f };
+	m_rad = { m_ownAlphaRect.width * m_scale.x, m_ownAlphaRect.height * m_scale.y };
+	m_rad = { m_rad.x / 3.0f, m_rad.y / 2.5f };
+	m_Hrad = 15.0f;
+	m_deg = 0.0f;
+	//m_color = { 0.15f, 0.95f, 0.15f, 1.0f };
+	//m_color = { 0.70f, 0.70f, 0.70f, 1.0f };
 	//m_color	= { 0.1f, 0.80f, 0.80f, 1.0f };
+	m_color	= { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	// 影
+	m_shadowPos = {};
+	m_shadowColor = { 0.0f, 0.0f, 0.0f, 0.6f };
+	m_shadowMat.Init();
 
 	// ローリング
 	m_roll.flg = 0;
@@ -40,10 +51,10 @@ void Player::Init()
 	m_roll.cnt = 0;
 
 	// シーカー
-	m_spos		= { 0.0f, 0.0f };
-	m_sscale	= { 0.75f, 0.75f };
-	m_sdeg		= 0.0f;
-	m_sColor	= { 0.8f, 0.9f, 0.8f, 1.0f };
+	m_spos = { 0.0f, 0.0f };
+	m_sscale = { 0.75f, 0.75f };
+	m_sdeg = 0.0f;
+	m_sColor = { 0.8f, 0.9f, 0.8f, 1.0f };
 	m_seekerFlg = false;
 
 	// ウェブ(A)
@@ -68,6 +79,14 @@ void Player::Init()
 
 	// デバッグ
 	m_DebugColor = C_GREEN;
+
+	// フレーム
+	m_frame = 0.0f;
+}
+
+void Player::Init()
+{
+	
 }
 
 void Player::CheckVec()
@@ -108,8 +127,7 @@ void Player::CheckVec()
 
 void Player::Update()
 {
-	m_frame++;
-	if (m_frame >= 360) m_frame = 0;
+	m_frame += 1.0f;
 
 	//m_DebugColor = { 1.0f, 0.5f + (fabs(sin(DirectX::XMConvertToRadians(m_frame * 7)))) * 0.5f, 0.0f, 0.8f };
 	m_DebugColor = { 0.0f, 1.0f, 0.5f + (fabs(sin(DirectX::XMConvertToRadians(m_frame * 7)))) * 0.5f, 0.8f };
@@ -151,7 +169,7 @@ void Player::Update()
 	}
 	else if (GetKey('G'))
 	{
-		if (m_frame % 2 == 0)
+		if ((int)m_frame % 2 == 0)
 		{
 			m_nowAnim.x += 2.0f;
 			if (m_nowAnim.x > 8.0f) m_nowAnim.x = 0.0f;
@@ -179,8 +197,8 @@ void Player::Update()
 	// B
 	m_webB.degMove = m_frame * 1.25f;
 	if (m_webB.degMove >= 360.0f) m_webB.degMove -= 360.0f;
-	m_webB.pos = { m_pos.x + cos(DegToRad(90 + m_webB.degAdd))* m_webB.size * 2.25f,
-					m_pos.y + sin(DegToRad(90 + m_webB.degAdd)) * m_webB.size* 2.25f };
+	m_webB.pos = { m_pos.x + cos(DegToRad(90.0f + m_webB.degAdd))* m_webB.size * 2.25f,
+					m_pos.y + sin(DegToRad(90.0f + m_webB.degAdd)) * m_webB.size* 2.25f };
 
 	//								 size() : 現在の配列要素数
 	for (UINT b = 0; b < m_bulletList.size(); b++)
@@ -196,6 +214,14 @@ void Player::Update()
 	m_mat.r = Math::Matrix::CreateRotationZ(DegToRad(m_deg));
 	m_mat.t = Math::Matrix::CreateTranslation(m_pos.x, m_pos.y, 0.0f);
 	m_mat.m = m_mat.s * m_mat.r * m_mat.t;
+
+	// 影
+	m_shadowPos.x = m_pos.x + 14.0f;
+	m_shadowPos.y = m_pos.y - 28.0f;
+	m_shadowMat.s = Math::Matrix::CreateScale(m_scale.x * 0.7f, m_scale.y * 0.7f, 0.0f);
+	m_shadowMat.r = m_mat.r;
+	m_shadowMat.t = Math::Matrix::CreateTranslation(m_shadowPos.x, m_shadowPos.y, 0.0f);
+	m_shadowMat.Mix();
 
 	CheckVec();
 }
@@ -217,6 +243,10 @@ void Player::Draw()
 	// 集中型の当たり判定表示(仮)
 	//SHADER.m_spriteShader.DrawBox(m_pos.x, m_pos.y + m_webB.size, m_webB.size + m_webB.sizeXAdd, m_webB.size, &Math::Color(1.0f, 0.0f, 0.0f, 0.3f), true);
 
+	// 自機影
+	DrawImgEX(m_shadowMat.m, &m_tex, Math::Rectangle(
+		m_ownAlphaRect.width * m_nowAnim.x, m_ownAlphaRect.height * m_nowAnim.y,
+		m_ownAlphaRect.width, m_ownAlphaRect.height), m_shadowColor);
 	// 自機
 	DrawImgEX(m_mat.m, &m_tex, Math::Rectangle(
 		m_ownAlphaRect.width * m_nowAnim.x, m_ownAlphaRect.height * m_nowAnim.y,
@@ -459,7 +489,7 @@ void Player::DrawWebA()
 	
 	for (int i = 0; i < 2; i++)
 	{
-		SHADER.m_spriteShader.DrawCircle(m_webA.pos.x + a2[i], m_webA.pos.y + b2[i], 10, &m_DebugColor, false);
+		SHADER.m_spriteShader.DrawCircle((int)(m_webA.pos.x + a2[i]), m_webA.pos.y + b2[i], 10, &m_DebugColor, false);
 	}
 
 	SHADER.m_spriteShader.DrawLine(m_webA.pos.x + a2[0], m_webA.pos.y + b2[0],

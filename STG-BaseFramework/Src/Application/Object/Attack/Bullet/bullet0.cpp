@@ -30,6 +30,11 @@ C_Bullet0::C_Bullet0()
 	m_speed = { 0.0f, 22.0f };
 
 	m_frame = 0;
+
+	// ‰e
+	m_shadow.pos = {};
+	m_shadow.color = { 0.0f, 0.0f, 0.0f, 0.2f };
+	m_shadow.mat.Init();
 }
 
 C_Bullet0::~C_Bullet0()
@@ -81,6 +86,14 @@ void C_Bullet0::Update()
 	m_mat.r = Math::Matrix::CreateRotationZ(DegToRad(m_deg));
 	m_mat.t = Math::Matrix::CreateTranslation(m_pos.x, m_pos.y, 0.0f);
 	m_mat.m = m_mat.Mix();
+
+	// ‰e
+	m_shadow.pos.x = m_pos.x + 14.0f;
+	m_shadow.pos.y = m_pos.y - 28.0f;
+	m_shadow.mat.s = Math::Matrix::CreateScale(m_scale.x * 0.7f, m_scale.y * 0.7f, 0.0f);
+	m_shadow.mat.r = m_mat.r;
+	m_shadow.mat.t = Math::Matrix::CreateTranslation(m_shadow.pos.x, m_shadow.pos.y, 0.0f);
+	m_shadow.mat.Mix();
 }
 
 void C_Bullet0::Draw()
@@ -107,6 +120,9 @@ void C_Bullet0::Draw()
 		SHADER.m_spriteShader.DrawTex(m_pTex, 0, 0, &m_AlphaRect, &m_color);
 		break;
 	}
+
+	// Ž©‹@‰e
+	DrawImgEX(m_shadow.mat.m, m_pTex, m_AlphaRect, m_shadow.color);
 }
 
 void C_Bullet0::Shot(Math::Vector2 a_pos)

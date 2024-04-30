@@ -2,25 +2,22 @@
 
 #include "../utility.h"
 
-#include "../Object/Player/player.h"	// プレイヤー
-
-#include "../Object/Enemy/enemy/enemy.h"		// エネミー
-
 #include "../Object/Attack/Beam/beam0.h"	// ビーム
 
 #include "../Object/Attack/Bullet/bullet0.h"	// 弾
-
-#include "../Object/Map/map.h"	// マップ
 
 #include "../Object/Item/item.h"	// アイテム
 
 #include "../Object/Hit/Hit.h"	// 当たり判定
 
-#include "../Object/UI/UI.h"	// UI
 
+class Player;
+class C_Enemy;
 class EnemyBase;
 class EnemyA;
 class Explosion;
+class Map;
+class UI;
 
 enum class SceneType
 {
@@ -45,45 +42,42 @@ private:
 
 	// マウス座標関連
 	bool bGetMousePos = true;
-
 	// フレーム数
 	int frame;
-	
 	// スコア
 	int	m_score;
 
 	// プレイヤー
-	Player		m_player;
+	std::shared_ptr<Player>		m_player;
 	int			m_playerNowAnimY = 0;
 	Math::Color m_playerColor = C_WHITE;
 
 	// 弾
 	KdTexture	m_bullet0Tex;
-	
 	C_Beam0		m_beam;
 	int			beamNum;
 	float		beamDeg;
 
 	// アイテム
-	std::vector<C_Item*> m_itemList;
+	std::vector<std::shared_ptr<C_Item>>	m_itemList;
 	KdTexture	m_itemTex;
 
 	// エネミー
-	std::vector<C_Enemy*>	m_enemyList;
+	std::vector<std::shared_ptr<C_Enemy>>	m_enemyList;
 	KdTexture	m_enemyTex;
 
 	// 敵の可変長の継承
-	std::vector<EnemyA*>			m_enemyAList;
+	std::vector<std::shared_ptr<EnemyA>>	m_enemyAList;
 
 	// パーティクル
 	KdTexture	m_particleTex;
 
 	// マップ
-	C_Map		m_map;
+	std::shared_ptr<Map>	m_map;
 	KdTexture	m_mapTex[2];
 
 	// UI
-	UI			m_UI;
+	std::shared_ptr<UI>		m_UI;
 	KdTexture	m_UITex;
 
 	// ●
@@ -134,20 +128,20 @@ public:
 	// ポインタ関連
 	void CreateEnemy(int _flg);
 
-	// ゲッター
-	Player* GetPlayer() { return &m_player; }
+	// (実体の)ゲッターか...あいつは良い奴だったよ...
+	//Player* GetPlayer() { return &m_player; }
 
 	C_Beam0* GetBeam() { return &m_beam; }
 	
 	//C_Enemy* GetEnemy() { return m_enemy; }
 	
-	C_Item* GetItem(int num) { return m_itemList[num]; }
+	//C_Item* GetItem(int num) { return m_itemList[num]; }
 	
-	C_Map* GetMap() { return &m_map; }
+	//Map* GetMap() { return &m_map; }
 
 	C_Hit* GetHit() { return &m_hit; }
 
-	UI* GetUI() { return &m_UI; }
+	//UI* GetUI() { return &m_UI; }
 
 	// GUI処理
 	void ImGuiUpdate();

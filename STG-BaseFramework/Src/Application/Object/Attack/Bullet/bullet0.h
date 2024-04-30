@@ -2,7 +2,7 @@
 
 class Scene;
 
-class C_Bullet0
+class C_Bullet0	// ÉvÉåÉCÉÑÅ[ÇÃíe
 {
 public:
 
@@ -47,4 +47,12 @@ private:
 	Math::Vector2		m_speed;
 
 	int					m_frame;
+
+	// âe
+	struct ShadowSt
+	{
+		Math::Vector2	pos;
+		Math::Color		color;
+		MathSet			mat;
+	}m_shadow;
 };

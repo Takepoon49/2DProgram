@@ -1,5 +1,20 @@
 #include "BaseObject.h"
 
+BaseObject::BaseObject()
+{
+	m_rect = { 0, 0, 100, 100 };
+
+	m_flg = st_dead;
+	m_pos = {};
+	m_move = {};
+	m_scale = { 1.0f, 1.0f };
+	m_rad = { m_rect.width * m_scale.x, m_rect.height * m_scale.y };
+	m_rad /= 2.0f;
+	m_deg = 0.0f;
+	m_mat.Init();
+	m_color = C_WHITE;
+}
+
 void BaseObject::Update()
 {
 	m_mat.s = Math::Matrix::CreateScale(m_scale.x, m_scale.y, 0.0f);
@@ -17,18 +32,6 @@ void BaseObject::Draw()
 void BaseObject::Init()
 {
 	//m_pTex = nullptr;
-
-	m_rect = { 0, 0, 100, 100 };
-
-	m_flg = st_dead;
-	m_pos = {};
-	m_move = {};
-	m_scale = { 1.0f, 1.0f };
-	m_rad = { m_rect.width * m_scale.x, m_rect.height * m_scale.y };
-	m_rad /= 2.0f;
-	m_deg = 0.0f;
-	m_mat.Init();
-	m_color = C_WHITE;
 }
 
 void BaseObject::Release()

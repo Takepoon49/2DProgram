@@ -17,6 +17,7 @@ static const float scrLeft = -scrWidth / 2;
 static const float scrRight = scrWidth / 2;
 static const float scrTop = scrHeight / 2;
 static const float scrBottom = -scrHeight / 2;
+static const float scrGap = 10.0f;
 
 enum E_keyFlg
 {

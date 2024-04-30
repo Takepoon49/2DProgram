@@ -1,7 +1,7 @@
 #include "../../Scene/Scene.h"
 #include "map.h"
 
-void C_Map::Init()
+void Map::Init()
 {
 	m_BackPos = { 0.0f, 0.0f };
 	m_BackColor = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -15,7 +15,7 @@ void C_Map::Init()
 	m_nowTex = 0;
 }
 
-void C_Map::Update()
+void Map::Update()
 {
 	m_BackPos.y -= 6.0f;
 	if (m_BackPos.y < -360.0f) m_BackPos.y = 360.0f;
@@ -26,7 +26,7 @@ void C_Map::Update()
 	m_mat.Mix();
 }
 
-void C_Map::Draw()
+void Map::Draw()
 {
 	SHADER.m_spriteShader.SetMatrix(m_mat.m);
 	SHADER.m_spriteShader.DrawTex(m_pImgTex[m_nowTex], 0, 0, &m_Rect, &m_BackColor);

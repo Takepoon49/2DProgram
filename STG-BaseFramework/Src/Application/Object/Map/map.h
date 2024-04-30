@@ -2,7 +2,7 @@
 
 class Scene;
 
-class C_Map
+class Map
 {
 public:
 

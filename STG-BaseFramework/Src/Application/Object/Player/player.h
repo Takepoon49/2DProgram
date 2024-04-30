@@ -14,8 +14,8 @@ class Player :public BaseObject
 {
 public:
 
-	Player() {};
-	~Player() { Release(); };
+	Player();
+	~Player()override { Release(); };
 
 	void Init() override;
 	void CheckVec();
@@ -72,13 +72,12 @@ public:
 	HitStruct GetObj();		// 自機当たり判定用
 	HitStruct GetSeekObj();	// シーカー当たり判定用
 
-	// ウェブ
-	int				m_webMode;	// 0:拡散型 1:集中型
-
 	HitStruct GetWebBObj();
 
 	int GetRollFlg() { return m_roll.flg; }
 	float GetRollFrame1() { return m_roll.frame1; }
+
+	float GetFrame0() { return m_frame; }
 
 private:
 
@@ -110,7 +109,7 @@ private:
 	Math::Rectangle	m_ownAlphaRect;			// 切り取り範囲
 	Math::Vector2	m_nowAnim;
 
-	int				m_frame;
+	float			m_frame;
 
 	Math::Vector2	m_speed;				// 移動量に入れる値
 	float			m_Hrad;					// 弾との当たり判定用半径
@@ -126,6 +125,11 @@ private:
 		float	move;		// 移動量プラス用
 		int		cnt;		// キーのカウント用
 	}m_roll;
+
+	// 影
+	Math::Vector2	m_shadowPos;
+	Math::Color		m_shadowColor;
+	MathSet			m_shadowMat;
 
 	// シーカー
 	int						m_SImgPosX = 0;

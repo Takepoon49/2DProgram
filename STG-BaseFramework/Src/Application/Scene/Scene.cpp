@@ -1,9 +1,17 @@
 #include "../main.h"
 #include "Scene.h"
 
+#include "../Object/Player/player.h"	// プレイヤー
+
+#include "../Object/Enemy/enemy/enemy.h"		// エネミー
+
 #include "../Object/Enemy/enemyA/enemyA.h"
 
 #include "../Object/Particle/explosion/explosion.h"
+
+#include "../Object/Map/map.h"	// マップ
+
+#include "../Object/UI/UI.h"	// UI
 
 void Scene::Draw2D()
 {
@@ -42,7 +50,7 @@ void Scene::DrawGame1()
 	DrawHako(0.0f, 0.0f, 640.0f, 360.0f, &Math::Color(0.0f, 0.0f, 0.1f, 1.0f), true);
 
 	// マップ
-	m_map.Draw();
+	m_map->Draw();
 
 	// アイテム
 	for (UINT i = 0; i < m_itemList.size(); i++)
@@ -71,10 +79,10 @@ void Scene::DrawGame1()
 	}
 
 	// 自機
-	m_player.Draw();
+	m_player->Draw();
 
 	// UI
-	m_UI.Draw();
+	m_UI->Draw();
 }
 
 void Scene::DrawResult()
@@ -90,9 +98,13 @@ void Scene::DrawString(SceneType nowScene)
 		break;
 
 	case SceneType::Game1:
-		sprintf_s(nowSceneStr, sizeof(nowSceneStr), "SCORE:%06d", m_score);
-		DrawMoji(250 + 3, 360 - 30 - 3, nowSceneStr, &Math::Color(0.0f, 0.0f, 0.0f, 1.0f));
-		DrawMoji(250, 360 - 30, nowSceneStr, &Math::Color(1.0f, 1.0f, 1.0f, 1.0f));
+		sprintf_s(nowSceneStr, sizeof(nowSceneStr), "HI-SCORE\n00114514");
+		SHADER.m_spriteShader.DrawString(-100.0f + scrGap, 360.0f - scrGap, nowSceneStr, Math::Color(0.0f, 0.0f, 0.0f, 1.0f));
+		SHADER.m_spriteShader.DrawString(-100.0f + scrGap + 3, 360.0f - scrGap - 3, nowSceneStr, Math::Color(1.0f, 1.0f, 1.0f, 1.0f));
+
+		sprintf_s(nowSceneStr, sizeof(nowSceneStr), "Player\n%06d", m_score);
+		DrawMoji(scrLeft + scrGap, scrTop - scrGap, nowSceneStr, & Math::Color(0.0f, 0.0f, 0.0f, 1.0f));
+		DrawMoji(scrLeft + scrGap + 3.0f, scrTop - scrGap - 3, nowSceneStr, &Math::Color(1.0f, 1.0f, 1.0f, 1.0f));
 		break;
 
 	default:
@@ -109,8 +121,7 @@ void Scene::DrawFilledMaru(float x, float y, float rad, Math::Color color)
 
 void Scene::CreateEnemy(int _flg)
 {
-	C_Enemy* enemy;
-	enemy = new C_Enemy();
+	std::shared_ptr<C_Enemy> enemy = std::make_shared<C_Enemy>();
 	enemy->SetOwner(this);
 	enemy->Init();
 	enemy->SetEnemyTex(&m_enemyTex);
@@ -163,14 +174,14 @@ void Scene::UpdateTitle()
 
 void Scene::CheckGame1Vec()
 {
-	std::vector<C_Item*>::iterator _itemIt;
+	std::vector<std::shared_ptr<C_Item>>::iterator _itemIt;
 	_itemIt = m_itemList.begin();
 	while (_itemIt != m_itemList.end())
 	{
 		const bool bAlive = (*_itemIt)->GetFlg();
 		if (!bAlive)
 		{
-			delete (*_itemIt);
+			//delete (*_itemIt);	// ←スマポなのでdeleteしなくて良い。
 			_itemIt = m_itemList.erase(_itemIt);
 		}
 		else
@@ -179,7 +190,7 @@ void Scene::CheckGame1Vec()
 		}
 	}
 
-	std::vector<EnemyA*>::iterator _enemyAIt;
+	std::vector<std::shared_ptr<EnemyA>>::iterator _enemyAIt;
 	_enemyAIt = m_enemyAList.begin();
 	if (GetAsyncKeyState('O') & 0x8000)
 	{
@@ -187,7 +198,7 @@ void Scene::CheckGame1Vec()
 		{
 			if (m_enemyAList.size() > 0)
 			{
-				delete (*_enemyAIt);
+				//delete (*_enemyAIt);
 				_enemyAIt = m_enemyAList.erase(_enemyAIt);
 			}
 			keyFlg['O'] = true;
@@ -204,7 +215,7 @@ void Scene::CheckGame1Vec()
 		const int bFlg = (*_enemyAIt)->GetFlg();
 		if (bFlg & st_dead)
 		{
-			delete (*_enemyAIt);
+			//delete (*_enemyAIt);	// ←スマポなので(ry
 			_enemyAIt = m_enemyAList.erase(_enemyAIt);
 		}
 		else
@@ -223,13 +234,14 @@ void Scene::UpdateGame1()
 	{
 		if (!keyFlg['I'])
 		{
-			C_Item* tempItem = new C_Item();
+			//C_Item* tempItem = new C_Item();
+			std::shared_ptr<C_Item> tempItem = std::make_shared<C_Item>();
 			tempItem->Init();
 			tempItem->SetTexture(&m_itemTex);
 			tempItem->Drop({ 0.0f, 300.0f }, 0);
-			m_itemList.push_back(tempItem);
+			m_itemList.push_back(tempItem);	
 
-			tempItem = new C_Item();
+			tempItem = std::make_shared<C_Item>();
 			tempItem->Init();
 			tempItem->SetTexture(&m_itemTex);
 			tempItem->Drop({ -150.0f, 300.0f }, 1);
@@ -262,7 +274,7 @@ void Scene::UpdateGame1()
 	}
 	if (GetAsyncKeyState('2') & 0x8000)
 	{
-		m_enemyAList[0]->ShootToPlayer(m_player.GetPos());
+		m_enemyAList[0]->ShootToPlayer(m_player->GetPos());
 	}
 	//for (int i = 0; i < m_enemy.size(); i++)
 	//{
@@ -273,7 +285,7 @@ void Scene::UpdateGame1()
 	{
 		if (!keyFlg['Q'])
 		{
-			EnemyA* tempEnemy = new EnemyA();
+			std::shared_ptr<EnemyA> tempEnemy = std::make_shared<EnemyA>();
 			m_enemyAList.push_back(tempEnemy);
 			//m_enemy.SetRndPos();
 		}
@@ -290,44 +302,44 @@ void Scene::UpdateGame1()
 		m_itemList[i]->Update();
 
 		// プレイヤーとアイテムの当たり判定
-		if (m_hit.HitObjCircle(m_player.GetObj(), m_itemList[i]->GetObj()))
+		if (m_hit.HitObjCircle(m_player->GetObj(), m_itemList[i]->GetObj()))
 		{
-			//m_player.SetB
+			//m_player->SetB
 
 			m_itemList[i]->SetFlg(0);
 		}
 	}
 
 	// 自機
-	m_player.Update();
+	m_player->Update();
 
 	// シーカー当たり判定
-	//if (m_hit.HitObjBox(m_player.GetSeekObj(), m_enemy.GetObj()))
+	//if (m_hit.HitObjBox(m_player->GetSeekObj(), m_enemy.GetObj()))
 	{
 		//if (!m_enemy.GetbLock())
 		{
-			//m_player.LockOn(m_enemy.GetObj());
+			//m_player->LockOn(m_enemy.GetObj());
 
 			//m_enemy.SetbLock(1);
 		}
 	}
 
 	// 弾と敵の当たり判定
-	for (int i = 0; i < m_player.GetBulletNum(); i++)
+	for (int i = 0; i < m_player->GetBulletNum(); i++)
 	{
-		if (m_player.GetBulletFlg(i) == 2) continue;
+		if (m_player->GetBulletFlg(i) == 2) continue;
 
-		//if (m_player.GetBulletObj(i).pos.y > 200.0f)
+		//if (m_player->GetBulletObj(i).pos.y > 200.0f)
 		//{
-		//	m_player.SetBulletActive(i, false);
+		//	m_player->SetBulletActive(i, false);
 		//}
 		for (int j = 0; j < m_enemyList.size(); j++)
 		{
 			if (m_enemyList[j]->GetFlg() & st_alive)
 			{
-				if (m_hit.HitObjBox(m_player.GetBulletObj(i), m_enemyList[j]->GetObj()))
+				if (m_hit.HitObjBox(m_player->GetBulletObj(i), m_enemyList[j]->GetObj()))
 				{
-					m_player.SetBulletFlg(i, 2);
+					m_player->SetBulletFlg(i, 2);
 					m_score += 10;
 					m_enemyList[j]->m_hp -= 1;
 					break;
@@ -340,7 +352,7 @@ void Scene::UpdateGame1()
 	{
 		if (!m_enemyList[e]->GetbLock() && m_enemyList[e]->GetFlg())
 		{
-			if (m_hit.HitObjBox(m_player.GetWebBObj(), m_enemyList[e]->GetObj()))
+			if (m_hit.HitObjBox(m_player->GetWebBObj(), m_enemyList[e]->GetObj()))
 			{
 				m_enemyList[e]->SetbLock(true);
 				//m_enemy[e]->SetFlg(st_dead);
@@ -349,11 +361,11 @@ void Scene::UpdateGame1()
 	}
 
 	// エネミー更新
-	std::vector<C_Enemy*>::iterator _it;
+	std::vector<std::shared_ptr<C_Enemy>>::iterator _it;
 	_it = m_enemyList.begin();
 	while (_it != m_enemyList.end())
 	{
-		(*_it)->Update(m_player.GetPos());
+		(*_it)->Update(m_player->GetPos());
 		_it++;
 	}
 	// エネミーA更新
@@ -367,10 +379,10 @@ void Scene::UpdateGame1()
 	}
 
 	// マップ
-	m_map.Update();
+	m_map->Update();
 
 	// UI
-	m_UI.Update();
+	m_UI->Update();
 }
 
 void Scene::UpdateResult()
@@ -393,27 +405,30 @@ void Scene::Init()
 
 void Scene::InitTitle()
 {
+
 }
 
 void Scene::InitGame1()
 {
 	// UI
-	m_UI.SetOwner(this);
-	m_UI.Init();
+	m_UI = std::make_shared<UI>();
+	m_UI->SetOwner(this);
+	m_UI->Init();
 	m_UITex.Load("Data/Texture/UI/UI-0.png");
-	m_UI.SetTexture0(&m_UITex);
+	m_UI->SetTexture0(&m_UITex);
 
 	// パーティクル
 	m_particleTex.Load("Data/Texture/Particle/effect0.png");
 
 	// プレイヤー
-	m_player.Init();
-	m_player.SetOwner(this);
-	m_player.SetTexture("Data/Texture/Player/player128x128.png");
+	m_player = std::make_shared<Player>();
+	m_player->SetOwner(this);
+	m_player->Init();
+	m_player->SetTexture("Data/Texture/Player/player128x128.png");
 
 	// 弾
 	m_bullet0Tex.Load("Data/Texture/Bullet/bullet-100x100.png");
-	m_player.SetBullet0Tex(&m_bullet0Tex);
+	m_player->SetBullet0Tex(&m_bullet0Tex);
 
 	// ビーム0
 	m_beam.SetOwner(this);
@@ -430,12 +445,13 @@ void Scene::InitGame1()
 	CreateEnemy(0);
 
 	// マップ
-	m_map.SetOwner(this);
-	m_map.Init();
+	m_map = std::make_shared<Map>();
+	m_map->SetOwner(this);
+	m_map->Init();
 	m_mapTex[0].Load("Data/Texture/Map/MiniWorld1280x720.png");
 	m_mapTex[1].Load("Data/Texture/Map/Desert01.png");
-	m_map.SetImg0(&m_mapTex[0]);
-	m_map.SetImg1(&m_mapTex[1]);
+	m_map->SetImg0(&m_mapTex[0]);
+	m_map->SetImg1(&m_mapTex[1]);
 
 	// ●
 	m_MaruTex.Load("Data/Texture/Misc/Maru360x360.png");
@@ -504,18 +520,18 @@ void Scene::ImGuiUpdate()
 		ImGui::SameLine();
 		ImGui::Text("FPS:%d|Scene:%s", APP.m_fps, nowSceneStr);
 
-		Math::Vector4 _DebugColor = m_player.GetDebugColor();
+		Math::Vector4 _DebugColor = m_player->GetDebugColor();
 
 		switch (m_debugNowPage)
 		{
 		case 0:
 			ImGui::Text(u8"いろいろ");
 			ImGui::Checkbox(":Debug", &m_debugFlg);
-			ImGui::Text("roll.flg:%d frame:%.1f", m_player.GetRollFlg(), m_player.GetRollFrame1());
-			ImGui::Text("PBullet[%d] Item[%d]", m_player.GetBulletNum(), m_itemList.size());
+			ImGui::Text("roll.flg:%d frame:%.1f", m_player->GetRollFlg(), m_player->GetRollFrame1());
+			ImGui::Text("PBullet[%d] Item[%d]", m_player->GetBulletNum(), m_itemList.size());
 			ImGui::Text("Enemy.size[%d]", m_enemyList.size());
 			ImGui::Text("EnemyFlg[0]:%d HP:%d", (int)m_enemyList[0]->GetFlg(), m_enemyList[0]->m_hp);
-			ImGui::Text("PShootFlg:%d PShootTime:%d", m_player.GetShootFlg(), m_player.GetShootTime());
+			ImGui::Text("PShootFlg:%d PShootTime:%d", m_player->GetShootFlg(), m_player->GetShootTime());
 			ImGui::Text("EnemyA.size:%d", m_enemyAList.size());
 			ImGui::SliderInt("beamNum", &beamNum, 0, 300, "%d");
 			ImGui::SliderFloat("beamDeg", &beamDeg, 0.0f, 720.0f);
@@ -523,14 +539,16 @@ void Scene::ImGuiUpdate()
 
 		case 1:
 			ImGui::Text(u8"[プレイヤー関連]");
+			// フレームとか変数
+			ImGui::Text("m_frame:%.1f", m_player->GetFrame0());
 			// プレイヤーの移動速度
-			ImGui::Text("moveVec : %.2f, %.2f", m_player.GetMoveVec().x, m_player.GetMoveVec().y);
+			ImGui::Text("moveVec : %.2f, %.2f", m_player->GetMoveVec().x, m_player->GetMoveVec().y);
 			// プレイヤー切り取り範囲
 			ImGui::SliderInt("PNowAnimY", &m_playerNowAnimY, 0, 9);
-			m_player.SetNowAnimY(m_playerNowAnimY);
+			m_player->SetNowAnimY(m_playerNowAnimY);
 			// プレイヤーの色
-			ImGui::ColorEdit4("PlayerColor", &m_playerColor.x);
-			m_player.SetPColor(m_playerColor);
+			//ImGui::ColorEdit4("PlayerColor", &m_playerColor.x);
+			//m_player->SetPColor(m_playerColor);
 
 			break;
 
@@ -542,12 +560,12 @@ void Scene::ImGuiUpdate()
 			ImGui::SliderFloat("DebugColor:B", &_DebugColor.z, 0.0f, 1.0f);
 			ImGui::SliderFloat("DebugColor:A", &_DebugColor.w, 0.0f, 1.0f);
 
-			//ImGui::Text("webA.deg:%.2f", m_player.m_webA.degMove);
+			//ImGui::Text("webA.deg:%.2f", m_player->m_webA.degMove);
 			break;
 		
 		case 3:
 			ImGui::Text(u8"[マップ関連]");
-			ImGui::SliderInt("nowTex", &m_map.m_nowTex, 0, 1);
+			ImGui::SliderInt("nowTex", &m_map->m_nowTex, 0, 1);
 			break;
 
 		default:
