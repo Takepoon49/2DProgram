@@ -37,12 +37,12 @@ void C_Item::Drop(Math::Vector2 a_pos, bool type)
 	{
 	case 0:	// powerUp
 		m_rad = 20.0f;
-		m_rect = { 0, 0, 40, 40 };
+		m_rect = { 0, 0, 32, 32 };
 		break;
 	
 	case 1:	// score
 		m_rad = 15.0f;
-		m_rect = { 40, 0, 30, 30 };
+		m_rect = { 0, 0, 32, 32 };
 		break;
 	}
 
@@ -58,7 +58,7 @@ void C_Item::SetFlg(UINT a_alive)
 
 HitStruct C_Item::GetObj()
 {
-	HitStruct objTemp;
+	HitStruct objTemp;	
 
 	objTemp.pos = m_pos;
 	objTemp.rad = { m_rad, m_rad };

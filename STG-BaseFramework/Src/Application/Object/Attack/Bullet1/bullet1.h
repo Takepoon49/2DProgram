@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../../../utility.h"
+#include "../../BaseObject.h"
 
 class Scene;
 
-class Bullet1
+class Bullet1 : public BaseObject
 {
 public:
 
@@ -16,33 +16,38 @@ public:
 	void Update();
 	void Draw();
 
-	bool GetFlg() { return m_flg; }
-
-	void SetTexture(KdTexture* _pTex) { m_pTex = _pTex; }
-
-	void SetOwner(Scene* _pOwner) { m_pOwner = _pOwner; }
-
 private:
 
-	Scene* m_pOwner;
 
-	KdTexture* m_pTex;
 
-	Math::Rectangle		m_AlphaRect;
-	//Math::Rectangle	m_AddRect;
+	//virtual void Release();
 
-	UINT				m_flg;
-	Math::Vector2		m_pos;
-	Math::Vector2		m_move;
-	Math::Vector2		m_emove;
-	Math::Vector2		m_scale;
-	Math::Vector2		m_rad;
-	float				m_deg;
-	MathSet				m_mat;
-	Math::Color			m_color;
+	//Scene* m_pOwner = nullptr;
 
-	Math::Vector2		m_speed;
+	float				m_speed = 0.0f;
 
-	int					m_frame;
+	//KdTexture			m_tex;
+
+	//Math::Rectangle	m_rect;
+	//Math::Vector2		m_nowAnim;
+
+	//int				m_frame;
+	//int				m_flg;
+	//Math::Vector2		m_pos;
+	//Math::Vector2		m_move;
+	//Math::Vector2		m_moveVec = Math::Vector2::Zero;
+	//Math::Vector2		m_scale;
+	//Math::Vector2		m_rad;
+	//float				m_deg;
+	//MathSet			m_mat;
+	//Math::Color		m_color;
+
+	//// ‰e
+	//struct ShadowSt
+	//{
+	//	Math::Vector2	pos;
+	//	Math::Color		color;
+	//	MathSet			mat;
+	//}m_shadow;
 
 };

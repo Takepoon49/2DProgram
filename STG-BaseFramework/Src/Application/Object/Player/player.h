@@ -2,7 +2,6 @@
 
 #include "../BaseObject.h"
 #include "../Attack/Bullet/bullet0.h"
-#include "../Attack/H-Laser/H-Laser.h"
 
 struct LockOn
 {
@@ -22,15 +21,19 @@ public:
 	void Update() override;
 	void Draw() override;
 
-	// 移動処理
+	// デバッグ用
+	Math::Color GetDebugColor() { return m_DebugColor; }
+
+	// 高速移動
 	void UpdateMove();	// X + 方向キーでローリング
+	float GetRollingVal() { return m_roll.frame1; }
+	float GetRollingValMax() { return m_roll.frameMax; }
+
 	void UpdateMove1();	// 方向キー二度押しでローリング（没）
 
 	// ウェブ
 	void DrawWebA();
 	void DrawWebB();
-
-	Math::Color GetDebugColor() { return m_DebugColor; }
 	
 	// シーカー
 	void UpdateSeeker();
@@ -39,9 +42,15 @@ public:
 	// 攻撃系
 	void UpdateAttack();
 
+	// ホーミング弾発射
+	void CreateHLaser();
+
 	// セッター
 	// 切り取り範囲
-	void SetNowAnimY(int _animY) { m_nowAnim.y = (int)_animY; }
+	void SetNowAnim(Math::Vector2 _animY) { m_nowAnim = _animY; }
+	Math::Vector2 GetNowAnim() { return m_nowAnim; }
+	void AddNowAnim(int _addX, int _addY);
+		
 	// 自機色
 	void SetPColor(Math::Color _color) { m_color = _color; }
 
@@ -67,21 +76,18 @@ public:
 	//void SetBullet0Tex(KdTexture* a_pTex) { m_pBullet0Tex = a_pTex; }
 	void SetBulletFlg(int num, int _flg) { m_bulletList[num]->SetFlg(_flg); }
 
-	void SetOwner(Scene* a_pOwner) { m_pOwner = a_pOwner; }
-
 	HitStruct GetObj();		// 自機当たり判定用
 	HitStruct GetSeekObj();	// シーカー当たり判定用
 
 	HitStruct GetWebBObj();
+	float GetWebBsize() { return m_webB.size; }
+	float GetWebBdegAdd() { return m_webB.degAdd; }
 
 	int GetRollFlg() { return m_roll.flg; }
-	float GetRollFrame1() { return m_roll.frame1; }
 
 	float GetFrame0() { return m_frame; }
 
 private:
-
-	Scene* m_pOwner;
 
 	struct webStruct
 	{
@@ -91,6 +97,7 @@ private:
 		float			sizeXAdd;
 		float			degMove;
 		float			degAdd;
+		int				frame;
 	};
 
 	// 拡散型ウェブ (A)
@@ -99,17 +106,18 @@ private:
 	//集中型ウェブ (B)
 	webStruct m_webB;
 
-	// キーフラグ
-	bool keyFlg[k_end];
+	struct charge
+	{
+		float	frame;
+		int		flg;
+
+	}m_charge;
 
 	// 自機
 	// 移動速度
 	float m_moveSpd = 7.5f;
 
 	Math::Rectangle	m_ownAlphaRect;			// 切り取り範囲
-	Math::Vector2	m_nowAnim;
-
-	float			m_frame;
 
 	Math::Vector2	m_speed;				// 移動量に入れる値
 	float			m_Hrad;					// 弾との当たり判定用半径
@@ -122,14 +130,10 @@ private:
 		Dir		dir;		// 方向
 		float	frame1;		// 入力用フレーム
 		float	frame2;		// 入力用フレーム
+		float	frameMax;		// 入力用フレーム
 		float	move;		// 移動量プラス用
 		int		cnt;		// キーのカウント用
 	}m_roll;
-
-	// 影
-	Math::Vector2	m_shadowPos;
-	Math::Color		m_shadowColor;
-	MathSet			m_shadowMat;
 
 	// シーカー
 	int						m_SImgPosX = 0;
@@ -155,7 +159,4 @@ private:
 
 	int		m_shootFlg;
 	int		m_shootTime;
-
-	// 追尾レーザー
-	HLaser	m_hLaser;
 };

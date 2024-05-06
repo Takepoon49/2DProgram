@@ -21,8 +21,11 @@ static const float scrGap = 10.0f;
 
 enum E_keyFlg
 {
+	k_return,
 	k_tab,
 	k_shift,
+	k_l,
+	k_h,
 	k_z,
 	k_x,
 	k_c,
@@ -30,6 +33,16 @@ enum E_keyFlg
 	k_down,
 	k_left,
 	k_right,
+	k_1,
+	k_2,
+	k_3,
+	k_4,
+	k_5,
+	k_6,
+	k_7,
+	k_8,
+	k_9,
+	k_0,
 	k_np_0,
 	k_np_1,
 	k_np_2,
@@ -41,7 +54,7 @@ enum E_keyFlg
 	k_np_8,
 	k_np_9,
 	k_any1,	// ctrl + '-'
-	k_any2,
+	k_any2,	// ctrl + 'd'
 	k_any3,
 	k_end
 };
@@ -52,6 +65,24 @@ enum class Dir
 	Down,
 	Left,
 	Right
+};
+
+enum class ObjType
+{
+	Base,
+	Player,
+	Enemy,
+	Enemy1
+};
+
+enum class ParticleType
+{
+	PlayerAB,
+	ExplosionA,
+	HLTrail,
+	MSLTrail,
+	Light0,
+	Test
 };
 
 enum EColor
@@ -70,10 +101,28 @@ enum EParticle
 
 enum BaseBitState
 {
-	st_dead		= 0,				// 非アクティブ
+	st_dead		= 0,			// 非アクティブ
 	st_alive	= 1 << 1,		// アクティブ
 	st_stat1	= 1 << 2,		// フラグ１
+	st_stat2	= 1 << 3
+};
 
+enum EnemyPattern
+{
+	ep_stop,	// デバッグ用 動かないやつ
+	ep_d1,		// 左右にサインカーブで移動
+	ep_d2,		// ぐるぐる回る敵
+	ep_1,		// 下→左
+	ep_2,		// 下→右
+	ep_3,		// 左から右にループ
+	ep_4,		// 右から左にループ
+	ep_5,		// 上から下にループ
+	ep_6,		// 下から上にループ
+	ep_7,		// 
+	ep_8,		// 
+	ep_9,		// 
+	ep_10,		// 
+	ep_end
 };
 
 struct MathSet

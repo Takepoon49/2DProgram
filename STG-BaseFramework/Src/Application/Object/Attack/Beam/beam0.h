@@ -6,6 +6,9 @@ class C_Beam0
 {
 public:
 
+	C_Beam0();
+	~C_Beam0() {};
+
 	void Init();
 	void Update(int aNum, float aDeg);
 	void Draw(int aNum);

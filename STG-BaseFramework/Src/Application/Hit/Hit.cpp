@@ -1,4 +1,4 @@
-#include "../../Scene//Scene.h"
+#include "../Scene/Scene.h"
 #include "Hit.h"
 
 bool C_Hit::HitObjBox(HitStruct objA, HitStruct objB)

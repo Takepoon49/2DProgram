@@ -3,7 +3,9 @@
 BaseObject::BaseObject()
 {
 	m_rect = { 0, 0, 100, 100 };
+	m_nowAnim = { 0.0f, 0.0f };
 
+	m_frame = 0;
 	m_flg = st_dead;
 	m_pos = {};
 	m_move = {};
@@ -42,4 +44,14 @@ void BaseObject::Release()
 void BaseObject::SetTexture(std::string _fileName)
 {
 	m_tex.Load(_fileName);
+}
+
+HitStruct BaseObject::GetObj()
+{
+	HitStruct obj;
+	obj.pos = m_pos;
+	obj.rad = m_rad;
+	obj.flg = m_flg;
+
+	return HitStruct(obj);
 }

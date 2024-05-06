@@ -1,43 +1,42 @@
 #pragma once
 
-#include "../../../utility.h"
+#include "../../BaseObject.h"
 
-class Scene;
+//class Scene;
 
-class HLaser
+class HLaser : public BaseObject
 {
 public:
 
 	HLaser() {};
 	~HLaser() {};
 
-	void Init();
-	void Update(Math::Vector2 _pos);
-	void Draw();
+	void Init(Math::Vector2 _pos, float _deg);
+	void Update() override;
+	void Draw() override;
 
-	void CalcMove(Math::Vector2 _pos, int _num);
+	float CalcMove(Math::Vector2 _pos, int _num);
 
-	void SetOwner(Scene* _pOwner) { m_pOwner = _pOwner; }
+	float CalcTgtDeg(Math::Vector2 _pos);
+	float CalcOwnDeg(Math::Vector2 _pos);
 
-	void SetTex(KdTexture* _pTex) { m_pTex = _pTex; }
+	void SetTgtDeg(float _deg) { m_tgtDeg = _deg; }
+	void SetTarget(std::shared_ptr<BaseObject> _tgt) { m_target = _tgt; }
 
 private:
 
 	void Release();
 
-	Scene* m_pOwner;
+	// たーげっと用
+	std::shared_ptr<BaseObject> m_target;
 
-	KdTexture* m_pTex;
+	int m_rndTime;
 
-	static const int MaxNum = 1;
-	Math::Vector2		m_pos[MaxNum];		// 座標
-	Math::Vector2		m_move[MaxNum];		// 移動量
-	Math::Vector2		m_size;				// サイズ
-	float				m_deg[MaxNum];		// 角度
-	MathSet				m_mat[MaxNum];		// 行列
-	Math::Color			m_color[MaxNum];	// 色
+	float m_radian = 0.0f;
+	float m_speed = 0.0f;
 
-	Math::Rectangle		m_rect;
+	static const int	m_ImgSizeX = 14;
+	static const int	m_ImgSizeY = 14;
 
-	int					m_flg;
+	float m_tgtDeg = 0.0f;
 };

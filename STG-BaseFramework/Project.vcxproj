@@ -159,20 +159,28 @@
     <ClInclude Include="..\Library\tinygltf\stb_image.h" />
     <ClInclude Include="..\Library\tinygltf\stb_image_write.h" />
     <ClInclude Include="..\Library\tinygltf\tiny_gltf.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Src\Application\Hit\Hit.h" />
     <ClInclude Include="Src\Application\main.h" />
     <ClInclude Include="Src\Application\Object\Attack\Beam\beam0.h" />
     <ClInclude Include="Src\Application\Object\Attack\Bullet1\bullet1.h" />
     <ClInclude Include="Src\Application\Object\Attack\Bullet\bullet0.h" />
     <ClInclude Include="Src\Application\Object\Attack\H-Laser\H-Laser.h" />
+    <ClInclude Include="Src\Application\Object\Attack\LSWM\bomb.h" />
     <ClInclude Include="Src\Application\Object\BaseObject.h" />
-    <ClInclude Include="Src\Application\Object\Enemy\enemyA\enemyA.h" />
-    <ClInclude Include="Src\Application\Object\Enemy\EnemyBase.h" />
+    <ClInclude Include="Src\Application\Object\Enemy\enemy\boss.h" />
     <ClInclude Include="Src\Application\Object\Enemy\enemy\enemy.h" />
-    <ClInclude Include="Src\Application\Object\Hit\Hit.h" />
+    <ClInclude Include="Src\Application\Object\Enemy\enemy\enemy1.h" />
+    <ClInclude Include="Src\Application\Object\Enemy\enemy\tank.h" />
     <ClInclude Include="Src\Application\Object\Item\item.h" />
     <ClInclude Include="Src\Application\Object\Map\map.h" />
     <ClInclude Include="Src\Application\Object\Particle\explosion\explosion.h" />
+    <ClInclude Include="Src\Application\Object\Particle\forHLaser\HLTrail.h" />
+    <ClInclude Include="Src\Application\Object\Particle\light0\lightH.h" />
     <ClInclude Include="Src\Application\Object\Particle\ParticleBase.h" />
+    <ClInclude Include="Src\Application\Object\Particle\playerAB\playerAB.h" />
+    <ClInclude Include="Src\Application\Object\Particle\ShockWave\ShockWave.h" />
+    <ClInclude Include="Src\Application\Object\Particle\TrailA\TrailA.h" />
     <ClInclude Include="Src\Application\Object\Player\player.h" />
     <ClInclude Include="Src\Application\Object\UI\UI.h" />
     <ClInclude Include="Src\Application\Scene\Scene.h" />
@@ -200,20 +208,27 @@
     <ClCompile Include="..\Library\imgui\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\Library\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="..\Library\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="Src\Application\Hit\Hit.cpp" />
     <ClCompile Include="Src\Application\main.cpp" />
     <ClCompile Include="Src\Application\Object\Attack\Beam\beam0.cpp" />
     <ClCompile Include="Src\Application\Object\Attack\Bullet1\bullet1.cpp" />
     <ClCompile Include="Src\Application\Object\Attack\Bullet\bullet0.cpp" />
     <ClCompile Include="Src\Application\Object\Attack\H-Laser\H-Laser.cpp" />
+    <ClCompile Include="Src\Application\Object\Attack\LSWM\bomb.cpp" />
     <ClCompile Include="Src\Application\Object\BaseObject.cpp" />
-    <ClCompile Include="Src\Application\Object\Enemy\enemyA\enemyA.cpp" />
-    <ClCompile Include="Src\Application\Object\Enemy\EnemyBase.cpp" />
+    <ClCompile Include="Src\Application\Object\Enemy\enemy\boss.cpp" />
     <ClCompile Include="Src\Application\Object\Enemy\enemy\enemy.cpp" />
-    <ClCompile Include="Src\Application\Object\Hit\Hit.cpp" />
+    <ClCompile Include="Src\Application\Object\Enemy\enemy\enemy1.cpp" />
+    <ClCompile Include="Src\Application\Object\Enemy\enemy\tank.cpp" />
     <ClCompile Include="Src\Application\Object\Item\item.cpp" />
     <ClCompile Include="Src\Application\Object\Map\map.cpp" />
     <ClCompile Include="Src\Application\Object\Particle\explosion\explosion.cpp" />
+    <ClCompile Include="Src\Application\Object\Particle\forHLaser\HLTrail.cpp" />
+    <ClCompile Include="Src\Application\Object\Particle\light0\lightH.cpp" />
     <ClCompile Include="Src\Application\Object\Particle\ParticleBase.cpp" />
+    <ClCompile Include="Src\Application\Object\Particle\playerAB\playerAB.cpp" />
+    <ClCompile Include="Src\Application\Object\Particle\ShockWave\ShockWave.cpp" />
+    <ClCompile Include="Src\Application\Object\Particle\TrailA\TrailA.cpp" />
     <ClCompile Include="Src\Application\Object\Player\player.cpp" />
     <ClCompile Include="Src\Application\Object\UI\UI.cpp" />
     <ClCompile Include="Src\Application\Scene\Scene.cpp" />
@@ -269,6 +284,12 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Project.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -3,8 +3,6 @@
 
 C_Bullet0::C_Bullet0()
 {
-	m_pTex = nullptr;
-
 	m_AlphaRect = { 0, 0, 7, 19 };
 	m_AddRect = { 7, 0, 7, 19 };
 
@@ -18,6 +16,7 @@ C_Bullet0::C_Bullet0()
 	m_rad = { m_AlphaRect.width * m_scale.x / 2.0f,
 				m_AlphaRect.height * m_scale.y / 2.0f };
 
+	m_scale = { 1.0f, 1.0f };
 	m_deg = 0.0f;
 
 	m_mat.Init();
@@ -27,19 +26,14 @@ C_Bullet0::C_Bullet0()
 	m_color = { 1.0f, 0.4f, 0.0f, 1.0f };
 	m_color = { 0.0f, 0.8f, 0.8f, 1.0f };
 
-	m_speed = { 0.0f, 22.0f };
+	m_speed = { 0.0f, 24.0f };
 
 	m_frame = 0;
 
 	// âe
 	m_shadow.pos = {};
-	m_shadow.color = { 0.0f, 0.0f, 0.0f, 0.2f };
+	m_shadow.color = { 0.0f, 0.0f, 0.0f, 0.7f };
 	m_shadow.mat.Init();
-}
-
-C_Bullet0::~C_Bullet0()
-{
-
 }
 
 void C_Bullet0::Init()
@@ -72,6 +66,7 @@ void C_Bullet0::Update()
 		else
 		{
 			m_AlphaRect = { 14, 19, 14, 6 };
+			m_scale = { 2.0f, 2.0f };
 		}
 		if (m_frame > 6)
 		{
@@ -88,9 +83,9 @@ void C_Bullet0::Update()
 	m_mat.m = m_mat.Mix();
 
 	// âe
-	m_shadow.pos.x = m_pos.x + 14.0f;
-	m_shadow.pos.y = m_pos.y - 28.0f;
-	m_shadow.mat.s = Math::Matrix::CreateScale(m_scale.x * 0.7f, m_scale.y * 0.7f, 0.0f);
+	m_shadow.pos.x = m_pos.x + 16.0f;
+	m_shadow.pos.y = m_pos.y - 32.0f;
+	m_shadow.mat.s = Math::Matrix::CreateScale(m_scale.x * 0.8f, m_scale.y * 0.8f, 0.0f);
 	m_shadow.mat.r = m_mat.r;
 	m_shadow.mat.t = Math::Matrix::CreateTranslation(m_shadow.pos.x, m_shadow.pos.y, 0.0f);
 	m_shadow.mat.Mix();
@@ -104,12 +99,12 @@ void C_Bullet0::Draw()
 		return;	// ëÅä˙ÉäÉ^Å[Éì
 	
 	case 1:	// î≠éÀíÜ
-		DrawImg(m_mat.m, m_pTex, Math::Rectangle(m_AlphaRect.x, m_AlphaRect.y,
+		DrawImg(m_mat.m, &m_tex, Math::Rectangle(m_AlphaRect.x, m_AlphaRect.y,
 			m_AlphaRect.width, m_AlphaRect.height), 1.0f);
 
 		D3D.SetBlendState(BlendMode::Add);
 
-		DrawImgEX(m_mat.m, m_pTex, Math::Rectangle(m_AddRect.x, m_AddRect.y,
+		DrawImgEX(m_mat.m, &m_tex, Math::Rectangle(m_AddRect.x, m_AddRect.y,
 			m_AddRect.width, m_AddRect.height), m_color);
 
 		D3D.SetBlendState(BlendMode::Alpha);
@@ -117,12 +112,12 @@ void C_Bullet0::Draw()
 
 	case 2:	// ìñÇΩÇ¡ÇΩ
 		SHADER.m_spriteShader.SetMatrix(m_mat.m);
-		SHADER.m_spriteShader.DrawTex(m_pTex, 0, 0, &m_AlphaRect, &m_color);
+		SHADER.m_spriteShader.DrawTex(&m_tex, 0, 0, &m_AlphaRect, &m_color);
 		break;
 	}
 
 	// é©ã@âe
-	DrawImgEX(m_shadow.mat.m, m_pTex, m_AlphaRect, m_shadow.color);
+	DrawImgEX(m_shadow.mat.m, &m_tex, m_AlphaRect, m_shadow.color);
 }
 
 void C_Bullet0::Shot(Math::Vector2 a_pos)
@@ -134,29 +129,4 @@ void C_Bullet0::Shot(Math::Vector2 a_pos)
 	m_flg = 1;
 
 	m_emove = { Rnd() * 2.0f - 1.0f, -3.0f };
-}
-
-const int C_Bullet0::GetFlg()
-{
-	return m_flg;
-}
-
-const Math::Vector2 C_Bullet0::GetPos()
-{
-	return m_pos;
-}
-
-const Math::Vector2 C_Bullet0::GetRad()
-{
-	return m_rad;
-}
-
-const HitStruct C_Bullet0::GetObj()
-{
-	HitStruct obj;
-	obj.pos = m_pos;
-	obj.rad = m_rad;
-	obj.flg = m_flg;
-
-	return HitStruct(obj);
 }

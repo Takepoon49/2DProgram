@@ -1,6 +1,10 @@
 #include "../../../Scene/Scene.h"
 #include "beam0.h"
 
+C_Beam0::C_Beam0()
+{
+}
+
 void C_Beam0::Init()
 {
 	for (int i = 0; i < MaxNum; i++)

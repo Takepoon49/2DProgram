@@ -10,7 +10,7 @@ public:
 	void Update();
 	void Draw();
 
-
+	void SetLargeMapTex(KdTexture* _tex) { m_pLargeMapTex = _tex; }
 	void SetImg0(KdTexture* a_pTex) { m_pImgTex[0] = a_pTex; }
 	void SetImg1(KdTexture* a_pTex) { m_pImgTex[1] = a_pTex; }
 	void SetOwner(Scene* a_pOwner) { m_pOwner = a_pOwner; }
@@ -32,4 +32,11 @@ private:
 	Math::Color		m_BackColor;
 	Math::Rectangle m_Rect;
 
+	// ÉâÅ[ÉW
+	KdTexture*		m_pLargeMapTex = nullptr;
+	Math::Rectangle m_lRect;
+	Math::Vector2	m_largePos = {};
+	Math::Vector2	m_lScale = {};
+	MathSet			m_lMat;
+	Math::Color		m_lColor;
 };

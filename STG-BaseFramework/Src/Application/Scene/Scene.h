@@ -8,15 +8,25 @@
 
 #include "../Object/Item/item.h"	// アイテム
 
-#include "../Object/Hit/Hit.h"	// 当たり判定
-
+#include "../Hit/Hit.h"	// 当たり判定
 
 class Player;
-class C_Enemy;
-class EnemyBase;
-class EnemyA;
+class HLaser;
+class PlayerAB;
+
+class Bullet1;
+class Bomb;
+
+class Enemy;
+class Boss;
+
+class ParticleBase;
+
 class Explosion;
+
+
 class Map;
+
 class UI;
 
 enum class SceneType
@@ -30,6 +40,9 @@ class Scene
 {
 private:
 
+	// ターゲット
+	int m_targetNum;
+
 	// シーン管理用変数
 	SceneType nowScene;
 	char nowSceneStr[100] = "";
@@ -41,40 +54,62 @@ private:
 	int		m_debugNowPage = 0;
 
 	// マウス座標関連
-	bool bGetMousePos = true;
+	bool m_bGetMousePos = true;
+	POINT m_mousePos;
+
 	// フレーム数
-	int frame;
-	// スコア
-	int	m_score;
+	int m_frame = 0;
+
+	// タイトル
+	Math::Matrix m_titleMat;	// 行列 
+	KdTexture m_titleTex0;		// Press Enter
+	KdTexture m_titleTex1;		// Ray Seeker
+	KdTexture m_titleTex2;		// 右のやつ
 
 	// プレイヤー
-	std::shared_ptr<Player>		m_player;
-	int			m_playerNowAnimY = 0;
-	Math::Color m_playerColor = C_WHITE;
+	int m_playerLife = 1;
+	std::shared_ptr<Player> m_player;
 
-	// 弾
+	// プレイヤーの弾
 	KdTexture	m_bullet0Tex;
 	C_Beam0		m_beam;
 	int			beamNum;
 	float		beamDeg;
+	//std::shared_ptr<PlayerAB> m_abParticle;	// 自機用アフターバーナー
+	std::vector<std::shared_ptr<PlayerAB>> m_abParticleList;
+
+	int			m_bombNum = 0;
+	std::shared_ptr<Bomb>	m_bomb;
+	std::vector<std::shared_ptr<Bomb>>	m_bombList;
+
+	// 敵の弾
+	// 弾
+	std::vector<std::shared_ptr<Bullet1>>			m_bulletList;
+	std::vector<std::shared_ptr<Bullet1>>::iterator m_bulletIt;
+	KdTexture* m_pBullet1Tex;
+
+	// 追尾レーザー
+	std::vector<std::shared_ptr<HLaser>>	m_hLaserList;
 
 	// アイテム
 	std::vector<std::shared_ptr<C_Item>>	m_itemList;
 	KdTexture	m_itemTex;
 
 	// エネミー
-	std::vector<std::shared_ptr<C_Enemy>>	m_enemyList;
+	std::vector<std::shared_ptr<Enemy>>		m_enemyList;
 	KdTexture	m_enemyTex;
 
-	// 敵の可変長の継承
-	std::vector<std::shared_ptr<EnemyA>>	m_enemyAList;
+	// ボス
+	std::shared_ptr<Boss>					m_boss;
+	KdTexture								m_bossTex;
 
 	// パーティクル
+	std::vector<std::shared_ptr<ParticleBase>>	m_particleList;	// 全パーティクルのリスト
 	KdTexture	m_particleTex;
 
 	// マップ
 	std::shared_ptr<Map>	m_map;
-	KdTexture	m_mapTex[2];
+	KdTexture				m_mapTex[3];
 
 	// UI
 	std::shared_ptr<UI>		m_UI;
@@ -87,9 +122,15 @@ private:
 	C_Hit		m_hit;
 
 public:
-	
-	// キーフラグ
+
+	// スコア
+	int m_score;
+	void AddScore(int _num) { m_score += _num; }
+
+	// フラグ
 	bool keyFlg[255];
+	bool AddBlend = true;
+	float LightHSize = 1.8f;
 
 	// デバッグ
 	bool GetDebugFlg() { return m_debugFlg; }
@@ -125,23 +166,60 @@ public:
 	void DrawString(SceneType nowScene);
 	void DrawFilledMaru(float x, float y, float rad, Math::Color);
 
-	// ポインタ関連
-	void CreateEnemy(int _flg);
+	// 敵出す用
+	void UpdateEnemyTL();
 
-	// (実体の)ゲッターか...あいつは良い奴だったよ...
-	//Player* GetPlayer() { return &m_player; }
+	// デバッグ用
+	void UpdateDebugEnemy();
+	void DebugKey1();
+	void DebugKey2();
+	void DebugKey3();
+
+	// 弾関連
+	void DeleteBullet1();
+	void CreateBullet1(Math::Vector2 _pos, float _deg);
+
+	// ゲッター
+	int	GetTargetNum() { return m_targetNum; }
+	int GetLockOnNum();
+	int GetPlayerLife() { return m_playerLife; }
+	float GetPlayerRollVal();
+	float GetPlayerRollValMax();
+	Math::Vector2 GetPlayerNowAnim();
+	Math::Color GetPlayerDColor();
+	std::shared_ptr<Player> GetPlayer() { return m_player; }
+
+	// セッター
+	void SetAllLock(int _flg);
+
+	// ポインタ関連
+	void CreateEnemy(Math::Vector2 _pos, int _flg);		// 敵出現 (あぱっち)
+	void CreateEnemy1(Math::Vector2 _pos, int _flg);	// 敵出現 (おすぷれい)
+
+	void CreateBoss(Math::Vector2 _pos, int _flg);		// ボス出現
+	void ResetBoss();									// ボスクリア
+
+	void CreateItem(Math::Vector2 _pos, int _flg);		// アイテム出現 
+	void CreateHLaser(Math::Vector2 _pos, float _deg);	// 追尾レーザー出現
+	void ShotBomb(Math::Vector2 _ppos, int _flg);		// ボム発射
+
+	void EraseAll();
+
+	// パーティクル
+	void CreateLightH(std::shared_ptr<BaseObject> _pair, int _type);			// 追尾レーザーの光
+	void CreateHLTrail(Math::Vector2 _pos, float _deg, Math::Color _color);		// 追尾レーザーの軌道
+	void CreateParticle(ParticleType _type, Math::Vector2 _pos);				// ？
+	void CreateExplosionA(ParticleType _type, Math::Vector2 _pos);				// 爆発
+	//void CreateLightH(std::shared_ptr<HLaser> _pair);							// ？
+	void CreatePlayerAB(std::shared_ptr<BaseObject> _obj);						// プレイヤーAB
+	void MakeShockWave(Math::Vector2 _pos);										// 衝撃波
+	void CreateMSLTrail(Math::Vector2 _pos);									// ミサイルの軌道
+
+	void DrawPlayerAB();
 
 	C_Beam0* GetBeam() { return &m_beam; }
-	
-	//C_Enemy* GetEnemy() { return m_enemy; }
-	
-	//C_Item* GetItem(int num) { return m_itemList[num]; }
-	
-	//Map* GetMap() { return &m_map; }
 
 	C_Hit* GetHit() { return &m_hit; }
-
-	//UI* GetUI() { return &m_UI; }
 
 	// GUI処理
 	void ImGuiUpdate();

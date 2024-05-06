@@ -3,31 +3,22 @@
 
 Player::Player()
 {
+	m_objType = ObjType::Player;
+
 	m_pOwner = nullptr;
 	m_pBullet0Tex = nullptr;
-
-	// キーフラグ
-	keyFlg[0] = false;
-
-	for (auto& i : keyFlg)
-	{
-		i = false;
-	}
-
-	// 追尾レーザー
-	m_hLaser.Init();
 
 	// 自機
 	m_rect = {};
 	m_ownAlphaRect = { 0, 0, 128, 128 };
-	m_nowAnim = { 0.0f, 1.0f };
+	m_nowAnim = { 0.0f, 5.0f };
 
 	m_flg = false;
 	m_pos = { 0.0f, -250.0f };
 	m_move = { 0.0f, 0.0f };
 	m_speed = { 7.5f, 7.5f };
-	m_scale = { 0.70f, 0.70f };
-	m_scale = { 0.70f, 0.70f };
+	m_scale = { 0.80f, 0.80f };
+
 	m_rad = { m_ownAlphaRect.width * m_scale.x, m_ownAlphaRect.height * m_scale.y };
 	m_rad = { m_rad.x / 3.0f, m_rad.y / 2.5f };
 	m_Hrad = 15.0f;
@@ -38,15 +29,16 @@ Player::Player()
 	m_color	= { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	// 影
-	m_shadowPos = {};
-	m_shadowColor = { 0.0f, 0.0f, 0.0f, 0.6f };
-	m_shadowMat.Init();
+	m_shadow.pos = {};
+	m_shadow.color = { 0.0f, 0.0f, 0.0f, 0.6f };
+	m_shadow.mat.Init();
 
 	// ローリング
 	m_roll.flg = 0;
 	m_roll.dir = Dir::Left;
 	m_roll.frame1 = 0.0f;
 	m_roll.frame2 = 0.0f;
+	m_roll.frameMax = 50.0f;
 	m_roll.move = 0.0f;
 	m_roll.cnt = 0;
 
@@ -64,6 +56,7 @@ Player::Player()
 	m_webA.sizeXAdd = 0.0f;
 	m_webA.degAdd = 0.0f;
 	m_webA.degMove = 0.0f;
+	m_webA.frame = 0;
 
 	// ウェブ(B)
 	m_webB.flg = false;
@@ -72,6 +65,7 @@ Player::Player()
 	m_webB.sizeXAdd = 0.0f;
 	m_webB.degAdd = 0.0f;
 	m_webB.degMove = 0.0f;
+	m_webB.frame = 0;
 
 	// 弾
 	m_shootTime = 0;
@@ -82,6 +76,10 @@ Player::Player()
 
 	// フレーム
 	m_frame = 0.0f;
+
+	// チャージ
+	m_charge.flg = 0;
+	m_charge.frame = 0.0f;
 }
 
 void Player::Init()
@@ -130,7 +128,13 @@ void Player::Update()
 	m_frame += 1.0f;
 
 	//m_DebugColor = { 1.0f, 0.5f + (fabs(sin(DirectX::XMConvertToRadians(m_frame * 7)))) * 0.5f, 0.0f, 0.8f };
-	m_DebugColor = { 0.0f, 1.0f, 0.5f + (fabs(sin(DirectX::XMConvertToRadians(m_frame * 7)))) * 0.5f, 0.8f };
+	//m_DebugColor = { 1.0f, 0.5f + (fabs(sin(DirectX::XMConvertToRadians(m_frame * 7)))) * 0.5f, 0.0f, 0.8f };
+	//m_DebugColor = { 0.5f + (fabs(sin(DirectX::XMConvertToRadians(m_frame * 6)))) * 0.5f, 0.0f, 1.0f, 0.8f };
+	//m_DebugColor = { 0.5f + (fabs(sin(DirectX::XMConvertToRadians(m_frame * 6)))) * 0.5f, 0.0f, 0.0f, 1.0f };
+	//m_DebugColor = { 0.0f, 1.0f, 0.5f + (fabs(sin(DirectX::XMConvertToRadians(m_frame * 7)))) * 0.5f, 1.0f };
+	float _rValue = fabs(sin(DirectX::XMConvertToRadians(m_frame * 2 +  0)));
+	float _gValue = fabs(sin(DirectX::XMConvertToRadians(m_frame * 2 + 90)));
+	m_DebugColor = { _rValue, _gValue, 1.0f, 1.0f };
 	//m_DebugColor = { 1.0f, 0.0f, 0.6f + (fabs(sin(DirectX::XMConvertToRadians(m_frame * 15)))) * 0.4f, 0.6f };
 	//m_DebugColor = { sin(DegToRad(m_frame * 6)), sin(DegToRad(180 + m_frame * 6)), 1.0f, 0.8f};
 	//m_DebugColor = { sin(DegToRad(m_frame * 5)), sin(DegToRad(180 + m_frame * 5)), 1.0f, 1.0f};
@@ -190,12 +194,16 @@ void Player::Update()
 
 	// ウェブ更新
 	// A
-	m_webA.degMove = m_frame * 1.25f;
+	m_webA.frame += 6;
+	if (m_webA.frame >= 360) m_webA.frame = 0;
+	m_webA.degMove = m_webA.frame;
 	if (m_webA.degMove >= 360.0f) m_webA.degMove -= 360.0f;
 	m_webA.pos = m_pos;
 
 	// B
-	m_webB.degMove = m_frame * 1.25f;
+	m_webB.frame += 3;
+	if (m_webB.frame >= 360) m_webB.frame = 0;
+	m_webB.degMove = m_webB.frame;
 	if (m_webB.degMove >= 360.0f) m_webB.degMove -= 360.0f;
 	m_webB.pos = { m_pos.x + cos(DegToRad(90.0f + m_webB.degAdd))* m_webB.size * 2.25f,
 					m_pos.y + sin(DegToRad(90.0f + m_webB.degAdd)) * m_webB.size* 2.25f };
@@ -216,41 +224,44 @@ void Player::Update()
 	m_mat.m = m_mat.s * m_mat.r * m_mat.t;
 
 	// 影
-	m_shadowPos.x = m_pos.x + 14.0f;
-	m_shadowPos.y = m_pos.y - 28.0f;
-	m_shadowMat.s = Math::Matrix::CreateScale(m_scale.x * 0.7f, m_scale.y * 0.7f, 0.0f);
-	m_shadowMat.r = m_mat.r;
-	m_shadowMat.t = Math::Matrix::CreateTranslation(m_shadowPos.x, m_shadowPos.y, 0.0f);
-	m_shadowMat.Mix();
+	m_shadow.pos.x = m_pos.x + 14.0f;
+	m_shadow.pos.y = m_pos.y - 28.0f;
+	m_shadow.mat.s = Math::Matrix::CreateScale(m_scale.x * 0.7f, m_scale.y * 0.7f, 0.0f);
+	m_shadow.mat.r = m_mat.r;
+	m_shadow.mat.t = Math::Matrix::CreateTranslation(m_shadow.pos.x, m_shadow.pos.y, 0.0f);
+	m_shadow.mat.Mix();
 
 	CheckVec();
 }
 
 void Player::Draw()
 {
-	//行列の初期化 (図形描画の前に書く)
-	SHADER.m_spriteShader.SetMatrix(DirectX::XMMatrixIdentity());
-
-	// ローリングクールタイム
-	DrawBar(m_pos.x - m_rad.x, m_pos.y + 50.0f, 50.0f, 7.5f, m_roll.frame1, 45.0f, &m_DebugColor, true, Dir::Right);
-
-	// 拡散型
-	DrawWebA();
-
-	// 集中型
-	DrawWebB();
-
 	// 集中型の当たり判定表示(仮)
 	//SHADER.m_spriteShader.DrawBox(m_pos.x, m_pos.y + m_webB.size, m_webB.size + m_webB.sizeXAdd, m_webB.size, &Math::Color(1.0f, 0.0f, 0.0f, 0.3f), true);
 
 	// 自機影
-	DrawImgEX(m_shadowMat.m, &m_tex, Math::Rectangle(
+	DrawImgEX(m_shadow.mat.m, &m_tex, Math::Rectangle(
 		m_ownAlphaRect.width * m_nowAnim.x, m_ownAlphaRect.height * m_nowAnim.y,
-		m_ownAlphaRect.width, m_ownAlphaRect.height), m_shadowColor);
+		m_ownAlphaRect.width, m_ownAlphaRect.height), m_shadow.color);
+
+	m_pOwner->DrawPlayerAB();
+
 	// 自機
 	DrawImgEX(m_mat.m, &m_tex, Math::Rectangle(
 		m_ownAlphaRect.width * m_nowAnim.x, m_ownAlphaRect.height * m_nowAnim.y,
 		m_ownAlphaRect.width,				m_ownAlphaRect.height					), m_color);
+
+	//行列の初期化 (図形描画の前に書く)
+	SHADER.m_spriteShader.SetMatrix(DirectX::XMMatrixIdentity());
+
+	// ローリングクールタイム
+	DrawBar(m_pos.x - m_rad.x, m_pos.y - 24.0f, 64.0f, 10.0f, m_roll.frame1, 45.0f, &Math::Color(0.0f, 1.0f, 0.0f, 0.9f), true, Dir::Right);
+
+	// 拡散型
+	if (m_webA.size >= 3.0f) DrawWebA();
+
+	// 集中型
+	if (m_webB.size >= 3.0f) DrawWebB();
 
 	// シーカー
 	//DrawSeeker();
@@ -266,11 +277,7 @@ void Player::Draw()
 	// 自機当たり判定
 	if (m_pOwner->GetDebugFlg())
 	{
-		ResetMatrix();
-		//m_DebugColor = C_RED;
-		DrawMaru(m_pos.x, m_pos.y, m_rad.x, &m_DebugColor, false);
-		DrawMaru(m_pos.x, m_pos.y, m_Hrad, &m_DebugColor, false);
-		SHADER.m_spriteShader.DrawBox((int)m_pos.x, (int)m_pos.y, (int)m_rad.x, (int)m_rad.y, &m_DebugColor, false);
+
 	}
 }
 
@@ -304,7 +311,7 @@ void Player::UpdateMove()
 		// 移動入力がされてなければ
 		if (m_moveVec == Math::Vector2::Zero)
 		{
-			if (GetAsyncKeyState('X') & 0x8000)
+			if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
 			{
 				if (m_roll.frame1 <= 0.0f)
 				{
@@ -315,7 +322,7 @@ void Player::UpdateMove()
 		break;
 
 	case 1:
-		if (GetAsyncKeyState('X') & 0x8000)
+		if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
 		{
 			m_roll.flg = 1;
 		}
@@ -347,7 +354,7 @@ void Player::UpdateMove()
 		break;
 
 	case 2:
-		if (m_roll.frame1 <= 8.0f)
+		if (m_roll.frame1 <= 7.0f)
 		{
 			m_roll.frame1 += 1.0f;
 
@@ -358,17 +365,17 @@ void Player::UpdateMove()
 			case Dir::Down:
 				break;
 			case Dir::Left:
-				m_moveVec = { -1.75f, 0.0f };
+				m_moveVec = { -2.0f, 0.0f };
 				break;			
 			case Dir::Right:
-				m_moveVec = { +1.75f, 0.0f };
+				m_moveVec = { +2.0f, 0.0f };
 				break;
 			}
 		}
 		else
 		{
 			m_roll.flg = 0;
-			m_roll.frame1 = 45.0f;
+			m_roll.frame1 = m_roll.frameMax;
 		}
 		break;
 	}
@@ -428,7 +435,7 @@ void Player::UpdateMove1()
 
 	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
 	{
-		if (!keyFlg[k_right])
+		if (!m_pOwner->keyFlg[k_right])
 		{
 			if (m_roll.flg == 0)
 			{
@@ -439,11 +446,11 @@ void Player::UpdateMove1()
 				m_roll.flg = 2;
 			}
 		}
-		keyFlg[k_right] = true;
+		m_pOwner->keyFlg[k_right] = true;
 	}
 	else
 	{
-		keyFlg[k_right] = false;
+		m_pOwner->keyFlg[k_right] = false;
 	}
 }
 
@@ -492,12 +499,13 @@ void Player::DrawWebA()
 		SHADER.m_spriteShader.DrawCircle((int)(m_webA.pos.x + a2[i]), m_webA.pos.y + b2[i], 10, &m_DebugColor, false);
 	}
 
-	SHADER.m_spriteShader.DrawLine(m_webA.pos.x + a2[0], m_webA.pos.y + b2[0],
-									m_webA.pos.x + a2[1], m_webA.pos.y + b2[1], &m_DebugColor);	
+	//SHADER.m_spriteShader.DrawLine(m_webA.pos.x + a2[0], m_webA.pos.y + b2[0],
+	//								m_webA.pos.x + a2[1], m_webA.pos.y + b2[1], &m_DebugColor);	
 
 	float size2 = (a2[0]);
 
-	for (deg = 0; deg < 360; deg += gapDeg)
+	gapDeg = 360.0f / 16.0f;
+	for (deg = 0; deg < 180; deg += gapDeg)
 	{
 		//a = cos(DegToRad(deg + m_webA.degMove)) * fabs(a2[0] - m_webA.pos.x);
 		//b = sin(DegToRad(deg + m_webA.degMove)) * fabs(a2[0] - m_webA.pos.x);
@@ -538,6 +546,24 @@ void Player::DrawWebB()
 			SHADER.m_spriteShader.DrawLine(m_pos.x, m_pos.y, m_webB.pos.x + a, m_webB.pos.y + b, &m_DebugColor);
 		}
 	}
+
+	if (m_pOwner->GetDebugFlg())
+	{
+		SHADER.m_spriteShader.DrawLine(m_pos.x, m_pos.y,
+			m_pos.x + cos(DegToRad(m_webB.degAdd + 90.0f - 24.0f)) * m_webB.size * 2.75f,
+			m_pos.y + sin(DegToRad(m_webB.degAdd + 90.0f - 24.0f)) * m_webB.size * 2.75f,
+			&Math::Color(0.0f, 1.0f, 0.0f, 1.0f));
+
+		SHADER.m_spriteShader.DrawLine(m_pos.x, m_pos.y,
+			m_pos.x + cos(DegToRad(m_webB.degAdd + 90.0f)) * m_webB.size * 2.75f,
+			m_pos.y + sin(DegToRad(m_webB.degAdd + 90.0f)) * m_webB.size * 2.75f,
+			&Math::Color(0.0f, 1.0f, 0.0f, 1.0f));
+
+		SHADER.m_spriteShader.DrawLine(m_pos.x, m_pos.y,
+			m_pos.x + cos(DegToRad(m_webB.degAdd + 90.0f + 24.0f)) * m_webB.size * 2.75f,
+			m_pos.y + sin(DegToRad(m_webB.degAdd + 90.0f + 24.0f)) * m_webB.size * 2.75f,
+			&Math::Color(0.0f, 1.0f, 0.0f, 1.0f));
+	}
 }
 
 void Player::UpdateSeeker()
@@ -561,26 +587,74 @@ void Player::UpdateAttack()
 	// 通常ショット
 	if (GetKey('Z'))
 	{
-		if (m_shootFlg == 0)
-		{
-			m_shootFlg = 1;
-		}
-	}
-
-	// ２連ショット
-	if (GetKey(VK_SHIFT))
-	{
-		if (m_shootFlg == 0)
+		if (m_shootFlg == 0 && m_webB.size <= 3.0f)
 		{
 			m_shootFlg = 2;
 		}
+
+		//if (!keyFlg[k_z] && m_pOwner->GetLockOnNum() > 0)
+		if (!m_pOwner->keyFlg[k_z])
+		{
+			CreateHLaser();
+			m_webB.size = 0.0f;
+			m_webB.sizeXAdd = 0.0f;
+			m_webB.degAdd = 0.0f;
+		}
+		m_pOwner->keyFlg[k_z] = true;
+	}
+	else
+	{
+		m_pOwner->keyFlg[k_z] = false;
 	}
 
-	// ３連ショット
-	if (GetKey('A'))
+	// 集中型
+	if (GetKey('X'))
 	{
-		if (m_shootFlg == 0)
+		if (!m_pOwner->keyFlg[k_z])
 		{
+
+			if (m_webB.size <= 250.0f) m_webB.size += 4.0f;
+			//if (m_webB.size <= 150.0f) m_webB.size += 5.0f;
+
+			if (m_webB.size >= 250.0f)
+				//if (m_webB.size >= 150.0f)
+			{
+				//if (m_webB.sizeXAdd <= 135.0f)
+				//{
+				//	m_webB.sizeXAdd += 3.0f;
+				//}
+			}
+
+		}
+	}
+	else
+	{
+		if (m_webB.size > 0.0f)
+		{
+			m_webB.size -= 18.0f;
+			m_webB.sizeXAdd = 0.0f;
+		}
+		else
+		{
+			m_webB.size = 0.0f;
+			m_webB.sizeXAdd = 0.0f;
+			m_webB.degAdd = 0;
+		}
+	}
+
+	if (m_webB.size <= 0.0f)
+	{
+		m_webB.flg = false;
+	}
+	else
+	{
+		m_webB.flg = true;
+	}
+
+
+	// ３連ショット
+	if (GetKey('A')) {
+		if (m_shootFlg == 0) {
 			m_shootFlg = 3;
 		}
 	}
@@ -601,7 +675,7 @@ void Player::UpdateAttack()
 		}
 		break;
 	case 2:	// ２列
-		if (m_shootTime % 3 == 0 && m_shootTime < 3 * 3)
+		if (m_shootTime % 3 == 0 && m_shootTime < 3 * 4)
 		{
 			CreateBullet(m_pos.x - 12.0f, m_pos.y);
 			CreateBullet(m_pos.x + 12.0f, m_pos.y);
@@ -650,51 +724,63 @@ void Player::UpdateAttack()
 			m_webA.size = 0.0f;
 		}
 	}
-	// 集中型
-	if (GetKey('C'))
-	{
-		if (m_webB.size <= 250.0f) m_webB.size += 5.0f;
-		//if (m_webB.size <= 150.0f) m_webB.size += 5.0f;
-		
-		if (m_webB.size >= 250.0f)
-		//if (m_webB.size >= 150.0f)
-		{
-			if (m_webB.sizeXAdd <= 135.0f)
-			{
-				m_webB.sizeXAdd += 5.0f;
-			}
-		}
-	}
-	else
-	{
-		if (m_webB.size > 0.0f)
-		{
-			m_webB.size -= 18.0f;
-			m_webB.sizeXAdd = 0.0f;
-		}
-		else
-		{
-			m_webB.size = 0.0f;
-			m_webB.sizeXAdd = 0.0f;
-			m_webB.degAdd = 0;
-		}
-	}
+}
 
-	if (m_webB.size <= 0.0f)
+void Player::CreateHLaser()
+{
+	// ホーミング弾
+	//if (GetAsyncKeyState('X') & 0x8000)
 	{
-		m_webB.flg = false;
+		for (int i = 0; i < m_pOwner->GetTargetNum(); i++)
+		{
+			float addDeg = 0;
+
+			//switch ((i + 1) % 3)
+			//{
+			//case 0:
+			//	addDeg = -30.0f;
+			//	break;
+			//case 1:
+			//	addDeg = 0.0f;
+			//	break;
+			//case 2:
+			//	addDeg = +30.0f;
+			//	break;
+			//default:
+			//	addDeg = 90.0f;
+			//	break;
+			//}
+			//m_pOwner->CreateHLaser({ m_pos.x, m_pos.y - 10.0f }, 270.0f + addDeg);
+
+			switch ((i + 1) % 2)
+			{
+			case 0:
+				addDeg = 180.0f + (rand() % 5) * 10;
+				break;
+			default:
+				addDeg = 0.0f - (rand() % 5) * 10;
+				break;
+			}
+			m_pOwner->CreateHLaser({ m_pos.x, m_pos.y - 10.0f }, 0.0f + addDeg);
+		}
 	}
-	else
-	{
-		m_webB.flg = true;
-	}
+	m_pOwner->SetAllLock(0);
+}
+
+void Player::AddNowAnim(int _addX, int _addY)
+{
+	m_nowAnim.x += (int)_addX;
+	m_nowAnim.y += (int)_addY;
+
+	if (m_nowAnim.x < 0.0f) m_nowAnim.x = 0.0f;
+	if (m_nowAnim.y < 0.0f) m_nowAnim.y = 0.0f;
 }
 
 void Player::CreateBullet(Math::Vector2 a_pos)
 {
 	C_Bullet0* tempBullet = new C_Bullet0();
 	tempBullet->Init();
-	tempBullet->SetTexture(m_pBullet0Tex);
+	tempBullet->SetTexture("Data/Texture/Bullet/bullet-100x100.png");
 	tempBullet->Shot(a_pos);
 	m_bulletList.push_back(tempBullet);
 }
@@ -703,7 +789,7 @@ void Player::CreateBullet(float _x, float _y)
 {
 	C_Bullet0* tempBullet = new C_Bullet0();
 	tempBullet->Init();
-	tempBullet->SetTexture(m_pBullet0Tex);
+	tempBullet->SetTexture("Data/Texture/Bullet/bullet-100x100.png");
 	tempBullet->Shot({_x, _y});
 	m_bulletList.push_back(tempBullet);
 }

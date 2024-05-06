@@ -2,6 +2,8 @@
 
 #include "KdGameWindow.h"
 
+#include "resource.h"
+
 // imguiウィンドウメッセージ処理用
 LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -25,9 +27,9 @@ bool KdGameWindow::Create(int clientWidth, int clientHeight, const std::string& 
 	wc.cbClsExtra = 0;										// エキストラクラス情報 
 	wc.cbWndExtra = 0;										// エキストラウィンドウ情報
 	wc.hInstance = hInst;									// インスタンスハンドル
-	wc.hIcon = LoadIcon(nullptr, IDI_APPLICATION);			// ラージアイコン
-	wc.hIconSm = LoadIcon(nullptr, IDI_APPLICATION);		// スモールアイコン 
-	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);			// マウスカーソル
+	wc.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON1));			// ラージアイコン
+	wc.hIconSm = LoadIcon(hInst, IDI_APPLICATION);		// スモールアイコン 
+	wc.hCursor = LoadCursor(hInst, IDC_ARROW);			// マウスカーソル
 	wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);	// 背景色 
 	wc.lpszMenuName = nullptr;								// メインメニュー名
 	wc.lpszClassName = wndClsName.c_str();					// ウィンドウクラス名

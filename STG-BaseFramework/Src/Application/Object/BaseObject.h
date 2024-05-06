@@ -2,6 +2,8 @@
 
 #include "../utility.h"
 
+class Scene;
+
 class BaseObject
 {
 public:
@@ -14,16 +16,18 @@ public:
 	virtual void Init();
 
 	// ゲッター
-	Math::Vector2 GetPos() { return m_pos; }
-	Math::Vector2 GetMove() { return m_move; }
-	Math::Vector2 GetMoveVec() { return m_moveVec; }
-	Math::Vector2 GetScale() { return m_scale; }
-	Math::Vector2 GetRad() { return m_rad; }
-	float GetDeg() { return m_deg; }
-	MathSet GetMathSet() { return m_mat; }
-	Math::Color GetColor() { return m_color; }
+	int				GetFlg() { return m_flg; }
+	Math::Vector2	GetPos() { return m_pos; }
+	Math::Vector2	GetMove() { return m_move; }
+	Math::Vector2	GetMoveVec() { return m_moveVec; }
+	Math::Vector2	GetScale() { return m_scale; }
+	Math::Vector2	GetRad() { return m_rad; }
+	float			GetDeg() { return m_deg; }
+	MathSet			GetMathSet() { return m_mat; }
+	Math::Color		GetColor() { return m_color; }
 
 	// セッター
+	void SetFlg(int _flg) { m_flg = _flg; }
 	void SetPos(Math::Vector2 _pos) { m_pos = _pos; }
 	void SetMove(Math::Vector2 _move) { m_move = _move; }
 	void SetScale(Math::Vector2 _scale) { m_scale = _scale; }
@@ -34,14 +38,28 @@ public:
 
 	void SetTexture(std::string _fileName);
 
+	HitStruct GetObj();
+
+	int m_hp = 0;
+	void SetHP(int _hp) { m_hp = _hp; }
+	int GetHP() { return m_hp; }
+
+	void SetOwner(Scene* _pOwner) { m_pOwner = _pOwner; }
+
 protected:
 
 	virtual void Release();
 
+	ObjType				m_objType = ObjType::Base;
+
+	Scene*				m_pOwner = nullptr;
+
 	KdTexture			m_tex;
 
 	Math::Rectangle		m_rect;
+	Math::Vector2		m_nowAnim;
 
+	int					m_frame;
 	int					m_flg;
 	Math::Vector2		m_pos;
 	Math::Vector2		m_move;
@@ -51,5 +69,13 @@ protected:
 	float				m_deg;
 	MathSet				m_mat;
 	Math::Color			m_color;
+
+	// 影
+	struct ShadowSt
+	{
+		Math::Vector2	pos;
+		Math::Color		color;
+		MathSet			mat;
+	}m_shadow;
 
 };
