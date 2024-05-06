@@ -179,6 +179,7 @@
     <ClInclude Include="Src\Application\Object\Particle\light0\lightH.h" />
     <ClInclude Include="Src\Application\Object\Particle\ParticleBase.h" />
     <ClInclude Include="Src\Application\Object\Particle\playerAB\playerAB.h" />
+    <ClInclude Include="Src\Application\Object\Particle\PlayerShadow\Pshadow.h" />
     <ClInclude Include="Src\Application\Object\Particle\ShockWave\ShockWave.h" />
     <ClInclude Include="Src\Application\Object\Particle\TrailA\TrailA.h" />
     <ClInclude Include="Src\Application\Object\Player\player.h" />
@@ -227,6 +228,7 @@
     <ClCompile Include="Src\Application\Object\Particle\light0\lightH.cpp" />
     <ClCompile Include="Src\Application\Object\Particle\ParticleBase.cpp" />
     <ClCompile Include="Src\Application\Object\Particle\playerAB\playerAB.cpp" />
+    <ClCompile Include="Src\Application\Object\Particle\PlayerShadow\Pshadow.cpp" />
     <ClCompile Include="Src\Application\Object\Particle\ShockWave\ShockWave.cpp" />
     <ClCompile Include="Src\Application\Object\Particle\TrailA\TrailA.cpp" />
     <ClCompile Include="Src\Application\Object\Player\player.cpp" />

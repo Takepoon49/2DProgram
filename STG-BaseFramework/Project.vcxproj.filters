@@ -109,6 +109,9 @@
     <Filter Include="Src\Application\Object\Particle\ShockWave">
       <UniqueIdentifier>{11638d49-8edd-4a3b-8399-3bfd0fcd263c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\Object\Particle\PlayerShadow">
+      <UniqueIdentifier>{95b478e2-3148-46b0-b8c3-7b1069afe60b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -274,6 +277,9 @@
     <ClInclude Include="Src\Application\Object\Enemy\enemy\tank.h">
       <Filter>Src\Application\Object\Enemy\enemy</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\Object\Particle\PlayerShadow\Pshadow.h">
+      <Filter>Src\Application\Object\Particle\PlayerShadow</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -407,6 +413,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\Object\Enemy\enemy\tank.cpp">
       <Filter>Src\Application\Object\Enemy\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Object\Particle\PlayerShadow\Pshadow.cpp">
+      <Filter>Src\Application\Object\Particle\PlayerShadow</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

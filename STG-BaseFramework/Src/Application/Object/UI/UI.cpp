@@ -3,6 +3,15 @@
 
 void UI::Init()
 {
+	// ゲームオーバー
+	m_GO.rect = { 0, 0, 526, 57 };
+	m_GO.pos = { 0.0f, 0.0f };
+	m_GO.mat.s = Math::Matrix::CreateScale(1.0f);
+	m_GO.mat.r = Math::Matrix::CreateRotationZ(0.0f);
+	m_GO.mat.t = Math::Matrix::CreateTranslation(m_GO.pos.x, m_GO.pos.y, 0.0f);
+	m_GO.mat.Mix();
+	m_GO.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
 	// 残機
 	m_playerNumPos = { 560.0f - scrGap, 330.0f - scrGap };
 	// 1100 37
@@ -44,6 +53,13 @@ void UI::Update()
 
 void UI::Draw()
 {
+	// ゲームオーバー
+	if (SCENE.m_gameOverFlg)
+	{
+		SHADER.m_spriteShader.SetMatrix(m_GO.mat.m);
+		SHADER.m_spriteShader.DrawTex(&m_pGameOverTex, 0, 0, &m_GO.rect, &m_GO.color);
+	}
+
 	// 残機の自機表示
 	SHADER.m_spriteShader.SetMatrix(m_playerMat.m);
 	SHADER.m_spriteShader.DrawTex(&m_playerTex, Math::Rectangle(0, m_pOwner->GetPlayerNowAnim().y * 128.0f, 128, 128), 1.0f);

@@ -127,6 +127,18 @@ void Player::Update()
 {
 	m_frame += 1.0f;
 
+	// 当たり判定
+	if (m_hitFrame > 0)
+	{
+		m_hitFrame--;
+		m_color.w = 0.3f;
+	}
+	else
+	{
+		m_color.w = 1.0f;
+		m_hitFlg = true;
+	}
+
 	//m_DebugColor = { 1.0f, 0.5f + (fabs(sin(DirectX::XMConvertToRadians(m_frame * 7)))) * 0.5f, 0.0f, 0.8f };
 	//m_DebugColor = { 1.0f, 0.5f + (fabs(sin(DirectX::XMConvertToRadians(m_frame * 7)))) * 0.5f, 0.0f, 0.8f };
 	//m_DebugColor = { 0.5f + (fabs(sin(DirectX::XMConvertToRadians(m_frame * 6)))) * 0.5f, 0.0f, 1.0f, 0.8f };
@@ -244,7 +256,7 @@ void Player::Draw()
 		m_ownAlphaRect.width * m_nowAnim.x, m_ownAlphaRect.height * m_nowAnim.y,
 		m_ownAlphaRect.width, m_ownAlphaRect.height), m_shadow.color);
 
-	m_pOwner->DrawPlayerAB();
+	if (m_hitFlg) m_pOwner->DrawPlayerAB();
 
 	// 自機
 	DrawImgEX(m_mat.m, &m_tex, Math::Rectangle(
@@ -357,6 +369,8 @@ void Player::UpdateMove()
 		if (m_roll.frame1 <= 7.0f)
 		{
 			m_roll.frame1 += 1.0f;
+
+			m_pOwner->CreatePShadow(m_pos);
 
 			switch (m_roll.dir)
 			{
@@ -651,6 +665,24 @@ void Player::UpdateAttack()
 		m_webB.flg = true;
 	}
 
+	// ボム
+	if (GetAsyncKeyState('C') & 0x8000)
+	{
+		if (!SCENE.keyFlg[k_c])
+		{
+			if (SCENE.m_bombNum > 0)
+			{
+				SCENE.m_bombNum--;
+				SCENE.ShotBomb(m_pos, 0);
+				SCENE.ShotBomb(m_pos, 1);
+			}
+		}
+		SCENE.keyFlg[k_c] = true;
+	}
+	else
+	{
+		SCENE.keyFlg[k_c] = false;
+	}
 
 	// ３連ショット
 	if (GetKey('A')) {
@@ -823,4 +855,11 @@ HitStruct Player::GetWebBObj()
 	obj.flg = m_webB.flg;
 
 	return HitStruct(obj);
+}
+
+void Player::OnHit()
+{
+	m_hitFrame = 90.0f;
+	m_hitFlg = false;
+	m_pOwner->CreateExplosionA(ParticleType::ExplosionA, m_pos);
 }

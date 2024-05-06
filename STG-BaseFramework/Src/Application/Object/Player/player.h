@@ -87,7 +87,13 @@ public:
 
 	float GetFrame0() { return m_frame; }
 
+	bool GetHitFlg() { return m_hitFlg; }
+	void OnHit();
+
 private:
+
+	int m_hitFrame = 0;
+	bool m_hitFlg = true;
 
 	struct webStruct
 	{

@@ -18,15 +18,27 @@ public:
 
 	void SetTexture0(KdTexture* _pTex) { m_pTex0 = _pTex; }
 	void SetPlayerTex(std::string _dir) { m_playerTex.Load(_dir); }
+	void SetGameOverTex(std::string _dir) { m_pGameOverTex.Load(_dir); }
 	void SetOwner(Scene* _pOwner) { m_pOwner = _pOwner; }
 
 private:
 
 	Scene* m_pOwner;
 
-	KdTexture*	m_pTex0;
+	KdTexture* m_pTex0;
 
+	// テキスト
 	char text[100] = "";
+
+	// ゲームオーバー用
+	KdTexture m_pGameOverTex;
+	struct gameover
+	{
+		Math::Rectangle rect;
+		Math::Vector2	pos;
+		MathSet			mat;
+		Math::Color		color;
+	}m_GO;
 	
 	// 自機アイコン用
 	KdTexture		m_playerTex;

@@ -24,6 +24,7 @@ enum E_keyFlg
 	k_return,
 	k_tab,
 	k_shift,
+	k_i,
 	k_l,
 	k_h,
 	k_z,
@@ -77,12 +78,13 @@ enum class ObjType
 
 enum class ParticleType
 {
-	PlayerAB,
-	ExplosionA,
-	HLTrail,
-	MSLTrail,
-	Light0,
-	Test
+	PlayerAB,	// プレイヤーアフターバーナー
+	PShadow,	// プレイヤー高速移動時の影
+	ExplosionA,	// 爆発１
+	HLTrail,	// 追尾弾軌道	
+	MSLTrail,	// ミサイルの軌道
+	Light0,		// 追尾弾光
+	Test		// 未使用
 };
 
 enum EColor

@@ -16,7 +16,7 @@ void TrailA::Init(Math::Vector2 _pos)
 	m_flg = st_alive;
 
 	m_pos.x = _pos.x;
-	m_pos.y = _pos.y - 16.0f;
+	m_pos.y = _pos.y;
 
 	m_move = {};
 	m_moveVec = {};
@@ -25,11 +25,11 @@ void TrailA::Init(Math::Vector2 _pos)
 	m_mat.Init();
 
 
-	m_scale = { 0.7f, 0.7f };
-	m_color = { 1.0f, 1.0f, 1.0f, 0.5f };
+	m_scale = { 0.5f, 0.5f };
+	m_color = { 1.0f, 1.0f, 1.0f, 0.8f };
 	//m_rect = { 64, 128, m_ImgSizeX, m_ImgSizeY };
 	//m_rect = { 128, 128, m_ImgSizeX, m_ImgSizeY };
-	m_rect = { 0, 128, m_ImgSizeX, m_ImgSizeY };
+	m_rect = { 160, 128, m_ImgSizeX, m_ImgSizeY };
 
 	m_type = ParticleType::MSLTrail;
 }
@@ -46,12 +46,12 @@ void TrailA::Update()
 	//	m_flg = st_dead;
 	//}
 
-	m_scale.x -= 1.0f / 70.0f;
-	m_scale.y -= 1.0f / 70.0f;
+	m_scale.x -= 0.5f / 45.0f;
+	m_scale.y -= 0.5f / 45.0f;
 
-	m_color.w -= 0.5f / 60.0f;
+	m_color.w -= 0.5f / 45.0f;
 
-	if (m_frame > 60)
+	if (m_frame >= 40.0f)
 	{
 		m_flg = st_dead;
 	}
@@ -66,10 +66,10 @@ void TrailA::Update()
 
 void TrailA::Draw()
 {
-	D3D.SetBlendState(BlendMode::Add);
+	//D3D.SetBlendState(BlendMode::Add);
 
 	SHADER.m_spriteShader.SetMatrix(m_mat.m);
 	SHADER.m_spriteShader.DrawTex(&m_tex, 0, 0, &m_rect, &m_color);
 
-	D3D.SetBlendState(BlendMode::Alpha);
+	//D3D.SetBlendState(BlendMode::Alpha);
 }

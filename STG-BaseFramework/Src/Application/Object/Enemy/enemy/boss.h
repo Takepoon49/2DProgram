@@ -46,6 +46,13 @@ public:
 
 private:
 
+	// —ƒ‹¤’Ê
+	Math::Rectangle m_wingsRect;
+
+	// ¶—ƒ
+
+
+	// ‰E—ƒ
 
 
 	//ObjType				m_objType = ObjType::Base;

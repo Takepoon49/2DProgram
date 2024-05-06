@@ -17,6 +17,7 @@
 // パーティクル
 #include "../Object/Particle/explosion/explosion.h"	// 爆発A
 #include "../Object/Particle/playerAB/playerAB.h"	// プレイヤーアフターバーナー
+#include "../Object/Particle/PlayerShadow/PShadow.h"// プレイヤーの影
 #include "../Object/Particle/forHLaser/HLTrail.h"	// 追尾弾軌道
 #include "../Object/Particle/light0/lightH.h"		// 光０
 
@@ -77,14 +78,8 @@ void Scene::DrawGame1()
 		m_itemList[i]->Draw();
 	}
 
-	// ボム
-	for (auto& bomb : m_bombList)
-	{
-		bomb->Draw();
-	}
-
 	// 自機 ※この中にアフターバーナーの描画もある
-	m_player->Draw();
+	if (!m_gameOverFlg) m_player->Draw();
 
 	// ビーム0
 	m_beam.Draw(beamNum);
@@ -108,12 +103,21 @@ void Scene::DrawGame1()
 	}
 
 	// ボス
-	m_boss->Draw();
+	if (m_boss != nullptr)
+	{
+		m_boss->Draw();
+	}
 
 	// パーティクル
 	for (auto& particleList : m_particleList)
 	{
 		particleList->Draw();
+	}
+
+	// ボム
+	for (auto& bomb : m_bombList)
+	{
+		bomb->Draw();
 	}
 
 	// 追尾レーザー
@@ -409,6 +413,15 @@ void Scene::CreatePlayerAB(std::shared_ptr<BaseObject> _obj)
 	m_abParticleList.push_back(tempAfterBurner);
 }
 
+void Scene::CreatePShadow(Math::Vector2 _pos)
+{
+	std::shared_ptr<PShadow> temp = std::make_shared<PShadow>();
+	temp->SetOwner(this);
+	temp->Init(m_player);
+	temp->SetTexture("Data/Texture/Player/player384x1280.png");
+	m_particleList.push_back(temp);
+}
+
 void Scene::MakeShockWave(Math::Vector2 _pos)
 {
 
@@ -632,51 +645,35 @@ void Scene::UpdateGame1()
 	// アイテム
 	if (GetKey('I'))
 	{
-		if (!keyFlg['I'])
+		if (!keyFlg[k_i])
 		{
-			CreateItem({ 0.0f, 200.0f}, 0);
-			CreateItem({ 100.0f, 200.0f}, 1);
+			CreateItem({ 0.0f, 200.0f }, 0);
+			CreateItem({ 100.0f, 200.0f }, 1);
 		}
-		keyFlg['I'] = true;
+		keyFlg[k_i] = true;
 	}
 	else
 	{
-		keyFlg['I'] = false;
+		keyFlg[k_i] = false;
 	}
 
 	// 自機
-	m_player->Update();
-
-	// ボム
-	if (GetAsyncKeyState('C') & 0x8000)
+	if (!m_gameOverFlg)
 	{
-		if (!keyFlg[k_c])
+		m_player->Update();
+
+		// 自機アフターバーナー
+		if (m_player->GetMoveVec().y >= 0.0f)
 		{
-			if (m_bombNum > 0)
+			if (m_frame % 2 == 0)
 			{
-				m_bombNum--;
-				ShotBomb(m_player->GetPos(), 0);
-				ShotBomb(m_player->GetPos(), 1);
+				CreatePlayerAB(m_player);
 			}
 		}
-		keyFlg[k_c] = true;
-	}
-	else
-	{
-		keyFlg[k_c] = false;
-	}
-
-	// 自機アフターバーナー
-	if (m_player->GetMoveVec().y >= 0.0f)
-	{
-		if (m_frame % 2 == 0)
+		for (auto& ab : m_abParticleList)
 		{
-			CreatePlayerAB(m_player);
+			ab->Update();
 		}
-	}
-	for (auto& ab : m_abParticleList)
-	{
-		ab->Update();
 	}
 
 	// 追尾弾と敵の当たり判定
@@ -687,6 +684,47 @@ void Scene::UpdateGame1()
 	{
 		bomb->Update();
 	}
+
+	if (m_player->GetHitFlg() && m_playerLife > 0)
+	{
+		// 敵の弾と自機の当たり判定
+		for (int i = 0; i < m_bulletList.size(); i++)
+		{
+			Math::Vector2 _ppos = m_player->GetPos();
+			Math::Vector2 _bpos = m_bulletList[i]->GetPos();
+			Math::Vector2 _v = _ppos - _bpos;
+			if (_v.Length() < 20.0f)
+			{
+				m_player->OnHit();
+				m_playerLife -= 1;
+				break;
+			}
+		}
+		// 敵と自機の当たり判定
+		for (int i = 0; i < m_enemyList.size(); i++)
+		{
+			Math::Vector2 _ppos = m_player->GetPos();
+			Math::Vector2 _bpos = m_enemyList[i]->GetPos();
+			Math::Vector2 _v = _ppos - _bpos;
+			if (_v.Length() < 32.0f)
+			{
+				m_player->OnHit();
+				m_playerLife -= 1;
+				break;
+			}
+		}
+	}
+
+	// ゲームオーバー判定
+	if (m_playerLife <= 0)
+	{
+		if (!m_gameOverFlg)
+		{
+			CreateExplosionA(ParticleType::ExplosionA, m_player->GetPos());
+			m_gameOverFlg = true;
+		}
+	}
+
 
 	// 弾と敵の当たり判定
 	for (int i = 0; i < m_player->GetBulletNum(); i++)
@@ -752,7 +790,10 @@ void Scene::UpdateGame1()
 	}
 
 	// ボス
-	m_boss->Update();
+	if (m_boss != nullptr)
+	{
+		m_boss->Update();
+	}
 
 	// 弾更新
 	for (auto& obj : m_bulletList)
@@ -840,6 +881,11 @@ void Scene::InitTitle()
 
 void Scene::InitGame1()
 {
+	m_gameOverFlg = false;
+	m_score = 0;
+	m_playerLife = 3;
+	m_bombNum = 6;
+
 	m_frame = 0;
 
 	// ターゲット
@@ -852,12 +898,12 @@ void Scene::InitGame1()
 	m_UITex.Load("Data/Texture/UI/UI-0.png");
 	m_UI->SetTexture0(&m_UITex);
 	m_UI->SetPlayerTex("Data/Texture/Player/player384x1280.png");
+	m_UI->SetGameOverTex("Data/Texture/Misc/GameOver.png");
 
 	// パーティクル
 	m_particleTex.Load("Data/Texture/Particle/particle0.png");
 
 	// プレイヤー
-	m_bombNum = 3;
 	m_player = std::make_shared<Player>();
 	m_player->SetOwner(this);
 	m_player->Init();
@@ -882,6 +928,8 @@ void Scene::InitGame1()
 	// 敵を１体生成
 	m_enemyTex.Load("Data/Texture/Enemy/enemy0.png");
 	//CreateEnemy(0);
+	// ボスを生成
+	//CreateBoss({ 0.0f, 0.0f }, 0);
 
 	// マップ
 	m_map = std::make_shared<Map>();

@@ -67,7 +67,6 @@ private:
 	KdTexture m_titleTex2;		// 右のやつ
 
 	// プレイヤー
-	int m_playerLife = 1;
 	std::shared_ptr<Player> m_player;
 
 	// プレイヤーの弾
@@ -78,7 +77,7 @@ private:
 	//std::shared_ptr<PlayerAB> m_abParticle;	// 自機用アフターバーナー
 	std::vector<std::shared_ptr<PlayerAB>> m_abParticleList;
 
-	int			m_bombNum = 0;
+	// ボム
 	std::shared_ptr<Bomb>	m_bomb;
 	std::vector<std::shared_ptr<Bomb>>	m_bombList;
 
@@ -113,7 +112,7 @@ private:
 
 	// UI
 	std::shared_ptr<UI>		m_UI;
-	KdTexture	m_UITex;
+	KdTexture				m_UITex;
 
 	// ●
 	KdTexture	m_MaruTex;
@@ -123,14 +122,21 @@ private:
 
 public:
 
+	// 残機
+	int m_playerLife = 3;
+
+	// ボム
+	int			m_bombNum = 0;
+
 	// スコア
 	int m_score;
 	void AddScore(int _num) { m_score += _num; }
 
 	// フラグ
-	bool keyFlg[255];
-	bool AddBlend = true;
-	float LightHSize = 1.8f;
+	bool	m_gameOverFlg = false;	// ゲームオーバー
+	bool	keyFlg[k_end];			// キーフラグ
+	bool	AddBlend = true;		// 加算合成
+	float	LightHSize = 1.8f;		// 追尾弾の光のサイズ
 
 	// デバッグ
 	bool GetDebugFlg() { return m_debugFlg; }
@@ -212,6 +218,7 @@ public:
 	void CreateExplosionA(ParticleType _type, Math::Vector2 _pos);				// 爆発
 	//void CreateLightH(std::shared_ptr<HLaser> _pair);							// ？
 	void CreatePlayerAB(std::shared_ptr<BaseObject> _obj);						// プレイヤーAB
+	void CreatePShadow(Math::Vector2 _pos);										// プレイヤー高速移動時の影
 	void MakeShockWave(Math::Vector2 _pos);										// 衝撃波
 	void CreateMSLTrail(Math::Vector2 _pos);									// ミサイルの軌道
 
