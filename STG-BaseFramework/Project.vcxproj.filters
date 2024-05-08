@@ -112,6 +112,9 @@
     <Filter Include="Src\Application\Object\Particle\PlayerShadow">
       <UniqueIdentifier>{95b478e2-3148-46b0-b8c3-7b1069afe60b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\Object\Attack\B-Laser">
+      <UniqueIdentifier>{8c213cfd-1a26-44fb-b3aa-278270213076}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -280,6 +283,9 @@
     <ClInclude Include="Src\Application\Object\Particle\PlayerShadow\Pshadow.h">
       <Filter>Src\Application\Object\Particle\PlayerShadow</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\Object\Attack\B-Laser\BLaser.h">
+      <Filter>Src\Application\Object\Attack\B-Laser</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -416,6 +422,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\Object\Particle\PlayerShadow\Pshadow.cpp">
       <Filter>Src\Application\Object\Particle\PlayerShadow</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Object\Attack\B-Laser\BLaser.cpp">
+      <Filter>Src\Application\Object\Attack\B-Laser</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

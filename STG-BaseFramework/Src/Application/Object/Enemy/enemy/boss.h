@@ -46,15 +46,23 @@ public:
 
 private:
 
+	int m_mflg;
+
 	// óÉã§í 
 	Math::Rectangle m_wingsRect;
 
 	// ç∂óÉ
-
+	MathSet			m_lmat;
+	Math::Vector2	m_lPos;
+	Math::Color		m_lColor;
+	float			m_lDeg;
 
 	// âEóÉ
-
-
+	MathSet			m_rmat;
+	Math::Vector2	m_rPos;
+	Math::Color		m_rColor;
+	float			m_rDeg;
+	
 	//ObjType				m_objType = ObjType::Base;
 
 	//Scene* m_pOwner = nullptr;

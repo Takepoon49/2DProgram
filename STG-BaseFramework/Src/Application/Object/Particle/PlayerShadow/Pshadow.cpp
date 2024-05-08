@@ -11,7 +11,7 @@ void PShadow::Init(std::shared_ptr<Player> _pair)
 	m_nowAnim.x = m_pair->GetNowAnim().x * 128;
 	m_nowAnim.y = m_pair->GetNowAnim().y * 128;
 
-	m_life = 14;
+	m_life = 20;
 
 	m_frame = 0;
 	m_flg = st_alive;
@@ -30,7 +30,7 @@ void PShadow::Update()
 	m_frame++;
 
 	m_scale *= 0.97f;
-	m_color.w *= 0.98f;
+	m_color.w *= 0.99f;
 
 	if (m_frame >= m_life)
 	{

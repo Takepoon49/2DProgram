@@ -80,7 +80,7 @@ void HLaser::Update()
 			m_speed *= 1.1f;
 		}
 
-		if (m_frame < 35 && m_target->GetFlg() == st_alive)
+		if (m_frame < 14 && m_target->GetFlg() == st_alive)
 		{
 			m_deg = CalcOwnDeg(m_target->GetPos());
 		}
@@ -125,9 +125,12 @@ void HLaser::Update()
 		// ‰~”»’è
 		if (v.Length() < 24.0f)
 		{
+			if (m_flg == st_alive)
+			{
+				m_pOwner->AddScore(300);
+			}
 			m_flg = st_dead;
 			m_target->SetHP(0);
-			m_pOwner->AddScore(50);
 		}
 	}
 

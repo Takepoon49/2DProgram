@@ -10,11 +10,9 @@ public:
 	Enemy1();
 	~Enemy1() {};
 
-	void Init(int _flg) override;
+	void Init(int _flg, int _stime) override;
 	void Update(Math::Vector2 ppos) override;
 	void Draw() override;
-
-	void UpdateMovePattern() override;
 
 	//// ƒ‰ƒ“ƒ_ƒ€oŒ»
 	void SetRndPos() override;

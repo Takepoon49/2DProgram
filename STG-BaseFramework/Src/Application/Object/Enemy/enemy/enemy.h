@@ -11,7 +11,7 @@ public:
 	Enemy() {};
 	~Enemy() {};
 
-	virtual void Init(int _flg);
+	virtual void Init(int _flg, int _stime);
 	virtual void Update(Math::Vector2 ppos);
 	virtual void Draw() override;
 

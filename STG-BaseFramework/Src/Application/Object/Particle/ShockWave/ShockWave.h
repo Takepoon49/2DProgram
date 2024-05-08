@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../BaseObject.h"
+#include "../../../Object/Particle/ParticleBase.h"
 
-class ShockWave : public BaseObject
+class ShockWave : public ParticleBase
 {
 public:
 
@@ -10,11 +10,22 @@ public:
 	~ShockWave() {};
 
 	void Init(Math::Vector2 _pos);
-	void Update();
-	void Draw();
+	void Update() override;
+	void Draw() override;
 
 private:
 
+	Math::Rectangle m_rect2;
+	MathSet m_mat2;
 
+	//static const int m_smokeMax = 40;
 
+	//struct st_smoke
+	//{
+	//	Math::Vector2	pos;
+	//	Math::Vector2	move;
+	//	MathSet			mat;
+	//	float			scale;
+	//	float			alpha;
+	//}m_smoke[m_smokeMax];
 };

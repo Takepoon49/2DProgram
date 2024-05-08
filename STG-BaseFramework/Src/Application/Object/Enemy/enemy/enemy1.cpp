@@ -6,7 +6,7 @@ Enemy1::Enemy1()
 
 }
 
-void Enemy1::Init(int _flg)
+void Enemy1::Init(int _flg, int _stime)
 {
 	m_objType = ObjType::Enemy1;
 
@@ -16,7 +16,8 @@ void Enemy1::Init(int _flg)
 	m_movePtn = _flg;
 	m_frame2 = 0;
 
-	m_shotTime = rand() % (2 * 30) + 30;
+	//m_shotTime = rand() % (2 * 30) + 30;
+	m_shotTime = _stime;
 
 	// ロックオン
 	m_Lock.flg = false;
@@ -25,7 +26,7 @@ void Enemy1::Init(int _flg)
 	m_Lock.mat.Init();
 	m_Lock.rect = Math::Rectangle(100, 0, 70, 70);
 
-	m_hp = 4;
+	m_hp = 6;
 
 	// 描画関連
 	m_nowAnimX = 0;
@@ -47,7 +48,7 @@ void Enemy1::Init(int _flg)
 	}
 
 	m_dColor = C_RED;
-	m_deg = 0.0f;
+	m_deg = 180.0f + 90.0f;
 	m_scale = { 0.65f, 0.65f };
 	//m_rad = { m_ImgSizeX * m_scale.x, m_ImgSizeY * m_scale.y };
 	m_rad = { m_AlphaRect.width * m_scale.x, m_AlphaRect.height * m_scale.y };
@@ -69,12 +70,16 @@ void Enemy1::Update(Math::Vector2 ppos)
 	// 弾のフラグチェック＆削除
 	//m_pOwner->DeleteBullet1();
 
-	Math::Vector2 Cpos = {};
-	Cpos.x = ppos.x - m_pos.x;
-	Cpos.y = ppos.y - m_pos.y;
+	// 自機に向ける
+	if (m_pOwner->GetPlayerHitFlg())
+	{
+		Math::Vector2 Cpos = {};
+		Cpos.x = ppos.x - m_pos.x;
+		Cpos.y = ppos.y - m_pos.y;
 
-	float Cradian = atan2(Cpos.y, Cpos.x);
-	m_deg = DirectX::XMConvertToDegrees(Cradian);
+		float Cradian = atan2(Cpos.y, Cpos.x);
+		m_deg = DirectX::XMConvertToDegrees(Cradian);
+	}
 
 	m_frame++;
 	if (m_frame % 3 == 0)
@@ -140,7 +145,7 @@ void Enemy1::Update(Math::Vector2 ppos)
 		if (m_frame > 3 * 3)
 		{
 			m_flg = BaseBitState::st_dead;
-			m_pOwner->m_score += 50;
+			m_pOwner->m_score += 300;
 		}
 	}
 
@@ -177,106 +182,6 @@ void Enemy1::Draw()
 	{
 		SHADER.m_spriteShader.SetMatrix(m_Lock.mat.m);
 		SHADER.m_spriteShader.DrawTex(m_pUITex, 0, 0, &m_Lock.rect, &m_Lock.color);
-	}
-}
-
-void Enemy1::UpdateMovePattern()
-{
-	switch (m_movePtn)
-	{
-	case ep_stop:	// デバッグ用、動かないやつ
-		m_move = { 0.0f, 0.0f };
-		break;
-
-	case ep_d1:	// 左右にsinカーブで移動
-		m_frame2++;
-
-		m_pos.x += cos(DirectX::XMConvertToRadians(m_frame2 * 1.5f)) * 6.0f;
-		//m_pos.y += sin(DirectX::XMConvertToRadians(m_frame*1.5f)) * 2.0f;
-
-		break;
-
-	case ep_d2:	// ぐるぐる回る敵
-		m_frame2++;
-
-		//m_pos.x += cos(DirectX::XMConvertToRadians(m_frame2 * 1.5f)) * 3.0f;
-		m_pos.y += sin(DirectX::XMConvertToRadians(m_frame2 * 1.5f)) * 6.0f;
-		break;
-
-	case ep_1:	// 下→左
-		m_frame2++;
-		if (m_frame <= 1)
-		{
-			m_move = { 0.0f, -3.0f };
-		}
-		if (m_frame == 60)
-		{
-			m_move = { -3.0f, -0.5f };
-		}
-		break;
-
-	case ep_2:	// 下→右 
-		m_frame2++;
-		if (m_frame <= 1)
-		{
-			m_move = { 0.0f, -3.0f };
-		}
-		if (m_frame == 60)
-		{
-			m_move = { +3.0f, -0.5f };
-		}
-		break;
-
-	case ep_3:	// 左から右にループ
-		m_move.x = 6.0f;
-		if (m_pos.x > scrRight + 32.0f)
-		{
-			m_pos.x = scrLeft - 32.0f;
-		}
-		break;
-
-	case ep_4:	// 右から左にループ
-		m_move.x = -6.0f;
-		if (m_pos.x < scrLeft - 32.0f)
-		{
-			m_pos.x = scrRight + 32.0f;
-		}
-		break;
-
-	case ep_5:	// 上から下にループ
-		m_move.y = -6.0f;
-		if (m_pos.y < scrBottom - 32.0f)
-		{
-			m_pos.y = scrTop + 32.0f;
-		}
-		break;
-
-	case ep_6:	// 下から上にループ
-		m_move.y = 6.0f;
-		if (m_pos.y < scrBottom - 32.0f)
-		{
-			m_pos.y = scrBottom - 32.0f;
-		}
-		break;
-
-	case ep_7:	// 
-
-		break;
-
-	case ep_8:
-
-		break;
-
-	case ep_9:
-
-		break;
-
-	case ep_10:
-
-		break;
-
-	default:
-		break;
 	}
 }
 

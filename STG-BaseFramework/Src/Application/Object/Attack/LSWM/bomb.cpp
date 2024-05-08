@@ -42,8 +42,8 @@ void Bomb::Update()
 	//if (m_pos.y >= 160.0f)
 	if (m_frame >= 50)
 	{
+		m_pOwner->CreateShockWave(m_pos);
 		m_flg = st_dead;
-		m_pOwner->MakeShockWave(m_pos);
 	}
 
 	//if (m_frame % 2 == 0)

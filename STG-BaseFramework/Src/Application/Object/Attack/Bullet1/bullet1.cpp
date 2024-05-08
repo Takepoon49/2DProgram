@@ -20,7 +20,7 @@ void Bullet1::Init()
 
 	m_pos = { 0.0f, 0.0f };
 	m_move = { 0.0f, 0.0f };
-	m_scale = { 1.5f, 1.5f };
+	m_scale = { 1.8f, 1.8f };
 
 	m_rad = { m_rect.width * m_scale.x / 2.0f,
 				m_rect.height * m_scale.y / 2.0f };

@@ -20,6 +20,7 @@
 #include "../Object/Particle/PlayerShadow/PShadow.h"// プレイヤーの影
 #include "../Object/Particle/forHLaser/HLTrail.h"	// 追尾弾軌道
 #include "../Object/Particle/light0/lightH.h"		// 光０
+#include "../Object/Particle/ShockWave/ShockWave.h"		// 衝撃波
 
 #include "../Object/Map/map.h"	// マップ
 
@@ -55,9 +56,23 @@ void Scene::Draw2D()
 
 void Scene::DrawTitle()
 {
+	// 海
+	for (int i = 0; i < 2; i++)
+	{
+		SHADER.m_spriteShader.SetMatrix(m_titleScrMat[i]);
+		SHADER.m_spriteShader.DrawTex(&m_titleTex2, Math::Rectangle(0, 0, 1280, 720), 1.0f);
+	}
+
+	// パーティクル
+	// アフターバーナー
+	for (auto& pAB : m_abParticleList)
+	{
+		pAB->Draw();
+	}
+
+	m_player->Draw();
+
 	SHADER.m_spriteShader.SetMatrix(m_titleMat);
-	// 滑走路
-	SHADER.m_spriteShader.DrawTex(&m_titleTex2, Math::Rectangle(0, 0, 1280, 720), 1.0f);
 	// Press Enter
 	SHADER.m_spriteShader.DrawTex(&m_titleTex0, Math::Rectangle(0, 0, 1280, 720), fabs(sin(DegToRad(m_frame*1.8f))));
 	// Ray Seeker
@@ -103,7 +118,8 @@ void Scene::DrawGame1()
 	}
 
 	// ボス
-	if (m_boss != nullptr)
+	//if (m_boss != nullptr)
+	if (m_bossFlg > 0)
 	{
 		m_boss->Draw();
 	}
@@ -153,37 +169,73 @@ void Scene::DrawGame1()
 }
 
 void Scene::DrawResult()
-{
+{	
+	// 海
+	/*for (int i = 0; i < 2; i++)
+	{
+		SHADER.m_spriteShader.SetMatrix(m_titleScrMat[i]);
+		SHADER.m_spriteShader.DrawTex(&m_titleTex2, Math::Rectangle(0, 0, 1280, 720), 1.0f);
+	}*/
+
+	SHADER.m_spriteShader.SetMatrix(m_resultCPMat);
+	// 滑走路と海
+	SHADER.m_spriteShader.DrawTex(&m_resultBackTex, Math::Rectangle(0, 0, 1280, 720), 1.0f);
+
+	// 文字
+	SHADER.m_spriteShader.DrawTex(&m_resultCTex, Math::Rectangle(0, 0, 1280, 720), 1.0f);
+	SHADER.m_spriteShader.DrawTex(&m_resultPTex, Math::Rectangle(0, 0, 1280, 720), fabs(sin(DegToRad(m_frame*1.5f))) );
+
+	// パーティクル
+	// アフターバーナー
+	/*for (auto& pAB : m_abParticleList)
+	{
+		pAB->Draw();
+	}*/
+
+	m_player->Draw();
+
+	SHADER.m_spriteShader.SetMatrix(m_resultMat.m);
+	SHADER.m_spriteShader.DrawTex(&m_resultTex, Math::Rectangle(0, 0, 335, 62), 1.0f);
+
+	DrawNumber( m_score, { m_resultPos.x + 500.0f, 10.0f }, 1);
 }
 
 void Scene::DrawString(SceneType nowScene)
 {
+	float _alpha = 1.0f - SceneFadeColor.w;
+
 	switch (nowScene)
 	{
 	case SceneType::Title:
-		//sprintf_s(nowSceneStr, sizeof(nowSceneStr), "press enter key");
-		//SHADER.m_spriteShader.DrawString(-180.0f, -200.0f, nowSceneStr, Math::Color(1.0f, 1.0f, 1.0f, 1.0f));
+		sprintf_s(nowSceneStr, sizeof(nowSceneStr), "[←]  SKIN : %s  [→]", m_skinStr);
+		DrawMoji(scrLeft + 430.0f, scrTop - 660.0f, nowSceneStr, &Math::Color(0.0f, 0.0f, 0.0f, _alpha));
+		DrawMoji(scrLeft + 430.0f + 3.0f, scrTop - 660.0f - 3, nowSceneStr, &Math::Color(1.0f, 1.0f, 1.0f, _alpha));
+
 		break;
 
 	case SceneType::Game1:
 		m_UI->DrawStr();
 
-		sprintf_s(nowSceneStr, sizeof(nowSceneStr), "HI-SCORE\n0100000");
-		SHADER.m_spriteShader.DrawString(-100.0f + scrGap, 360.0f - scrGap, nowSceneStr, Math::Color(0.0f, 0.0f, 0.0f, 1.0f));
-		SHADER.m_spriteShader.DrawString(-100.0f + scrGap + 3, 360.0f - scrGap - 3, nowSceneStr, Math::Color(1.0f, 1.0f, 1.0f, 1.0f));
+		sprintf_s(nowSceneStr, sizeof(nowSceneStr), "%02d:%02d", m_min, 59 - m_sec);
+		SHADER.m_spriteShader.DrawString(-60.0f + scrGap, 350.0f - scrGap, nowSceneStr, Math::Color(0.0f, 0.0f, 0.0f, _alpha));
+		SHADER.m_spriteShader.DrawString(-60.0f + scrGap + 3, 350.0f - scrGap - 3, nowSceneStr, Math::Color(1.0f, 1.0f, 1.0f, _alpha));
 
-		sprintf_s(nowSceneStr, sizeof(nowSceneStr), "Player\n%07d", m_score);
-		DrawMoji(scrLeft + scrGap + 10.0f, scrTop - scrGap, nowSceneStr, & Math::Color(0.0f, 0.0f, 0.0f, 1.0f));
-		DrawMoji(scrLeft + scrGap + 10.0f + 3.0f, scrTop - scrGap - 3, nowSceneStr, &Math::Color(1.0f, 1.0f, 1.0f, 1.0f));
+		sprintf_s(nowSceneStr, sizeof(nowSceneStr), "Player\n%06d", m_score);
+		DrawMoji(scrLeft + scrGap + 10.0f, scrTop - scrGap, nowSceneStr, & Math::Color(0.0f, 0.0f, 0.0f, _alpha));
+		DrawMoji(scrLeft + scrGap + 10.0f + 3.0f, scrTop - scrGap - 3, nowSceneStr, &Math::Color(1.0f, 1.0f, 1.0f, _alpha));
 
-		sprintf_s(nowSceneStr, sizeof(nowSceneStr), "B x %d", m_bombNum);
-		DrawMoji(scrLeft + 1145.0f, scrTop - 85.0f, nowSceneStr, &Math::Color(0.0f, 0.0f, 0.0f, 1.0f));
-		DrawMoji(scrLeft + 1145.0f + 3.0f, scrTop - 85.0f - 3, nowSceneStr, &Math::Color(1.0f, 1.0f, 1.0f, 1.0f));
+		//sprintf_s(nowSceneStr, sizeof(nowSceneStr), "Player:%d", m_playerLife);
+		//DrawMoji(scrLeft + 1145.0f, scrTop - 85.0f, nowSceneStr, &Math::Color(0.0f, 0.0f, 0.0f, _alpha));
+		//DrawMoji(scrLeft + 1145.0f + 3.0f, scrTop - 85.0f - 3, nowSceneStr, &Math::Color(1.0f, 1.0f, 1.0f, _alpha));
 		break;
 
 	case SceneType::Result:
-		sprintf_s(nowSceneStr, sizeof(nowSceneStr), "RESULTS");
-		SHADER.m_spriteShader.DrawString(-300.0f, 200.0f, nowSceneStr, Math::Color(1.0f, 1.0f, 1.0f, 1.0f));
+		//sprintf_s(nowSceneStr, sizeof(nowSceneStr), "RESULTS");
+		//SHADER.m_spriteShader.DrawString(-300.0f, 200.0f, nowSceneStr, Math::Color(1.0f, 1.0f, 1.0f, 1.0f));
+
+		//sprintf_s(nowSceneStr, sizeof(nowSceneStr), "Press 'SPACE' to title");
+		//DrawMoji(scrLeft + 640.0f, scrTop - 500.0f, nowSceneStr, &Math::Color(0.0f, 0.0f, 0.0f, _alpha));
+		//DrawMoji(scrLeft + 640.0f + 3.0f, scrTop - 500.0f - 3, nowSceneStr, &Math::Color(1.0f, 1.0f, 1.0f, _alpha));
 		break;
 	default:
 		break;
@@ -270,22 +322,22 @@ void Scene::SetAllLock(int _flg)
 	}
 }
 
-void Scene::CreateEnemy(Math::Vector2 _pos, int _flg)
+void Scene::CreateEnemy(Math::Vector2 _pos, int _flg, int _frame)
 {
 	std::shared_ptr<Enemy> enemy = std::make_shared<Enemy>();
 	enemy->SetOwner(this);
-	enemy->Init(_flg);
+	enemy->Init(_flg, _frame);
 	enemy->SetPos(_pos);
 	enemy->SetTexture("Data/Texture/Enemy/enemy0.png");
 	enemy->SetUITex(&m_UITex);
 	m_enemyList.push_back(enemy);
 }
 
-void Scene::CreateEnemy1(Math::Vector2 _pos, int _flg)
+void Scene::CreateEnemy1(Math::Vector2 _pos, int _flg, int _frame)
 {
 	std::shared_ptr<Enemy1> enemy1 = std::make_shared<Enemy1>();
 	enemy1->SetOwner(this);
-	enemy1->Init(_flg);
+	enemy1->Init(_flg, _frame);
 	enemy1->SetPos(_pos);
 	enemy1->SetTexture("Data/Texture/Enemy/enemy0.png");
 	enemy1->SetUITex(&m_UITex);
@@ -422,9 +474,13 @@ void Scene::CreatePShadow(Math::Vector2 _pos)
 	m_particleList.push_back(temp);
 }
 
-void Scene::MakeShockWave(Math::Vector2 _pos)
+void Scene::CreateShockWave(Math::Vector2 _pos)
 {
-
+	std::shared_ptr<ShockWave> temp = std::make_shared<ShockWave>();
+	temp->SetOwner(this);
+	temp->Init(_pos);
+	temp->SetTexture("Data/Texture/Particle/particle0.png");
+	m_particleList.push_back(temp);
 }
 
 void Scene::CreateMSLTrail(Math::Vector2 _pos)
@@ -435,6 +491,11 @@ void Scene::CreateMSLTrail(Math::Vector2 _pos)
 	temp->Init(_pos);
 	temp->SetTexture("Data/Texture/Particle/particle0.png");
 	m_particleList.push_back(temp);
+}
+
+bool Scene::GetPlayerHitFlg()
+{
+	return 	m_player->GetHitFlg();
 }
 
 void Scene::DrawPlayerAB()
@@ -494,7 +555,6 @@ void Scene::Update()
 	case SceneType::Game1:
 		CheckGame1Vec();
 		UpdateGame1();
-
 		break;
 
 	case SceneType::Result:
@@ -511,12 +571,84 @@ void Scene::UpdateTitle()
 {
 	m_frame++;
 
+	Math::Vector2 _nowAnim = m_player->GetNowAnim();
+
+	// スキンに合わせて変更
+	// -- Berkut ----------------------
+	if (_nowAnim.y == 0.0f)
+	{
+		m_skinStr[0] = 'A';
+		m_skinStr[1] = '1';
+	}
+	if (_nowAnim.y == 1.0f)
+	{
+		m_skinStr[0] = 'A';
+		m_skinStr[1] = '2';
+	}
+	if (_nowAnim.y == 2.0f)
+	{
+		m_skinStr[0] = 'A';
+		m_skinStr[1] = '3';
+	}
+	// -- Rafale ----------------------
+	if (_nowAnim.y == 3.0f)
+	{
+		m_skinStr[0] = 'B';
+		m_skinStr[1] = '1';
+	}
+	if (_nowAnim.y == 4.0f)
+	{
+		m_skinStr[0] = 'B';
+		m_skinStr[1] = '2';
+	}
+	if (_nowAnim.y == 5.0f)
+	{
+		m_skinStr[0] = 'B';
+		m_skinStr[1] = '3';
+	}
+	// -- Maitake ----------------------
+	if (_nowAnim.y == 6.0f)
+	{
+		m_skinStr[0] = 'M';
+		m_skinStr[1] = '0';
+	}
+
+	// 海のスクロール
+	m_titleScrPos.y -= 2.0f;
+	if (m_titleScrPos.y <= -720)
+	{
+		m_titleScrPos.y = 0.0f;
+	}
+	m_titleScrMat[0] = Math::Matrix::CreateTranslation(m_titleScrPos.x, m_titleScrPos.y, 0.0f);
+	m_titleScrMat[1] = Math::Matrix::CreateTranslation(m_titleScrPos.x, m_titleScrPos.y + 720.0f, 0.0f);
+
+	// 自機
+	m_player->Update();
+
+	// 自機アフターバーナー
+	if (m_player->GetMoveVec().y >= 0.0f)
+	{
+		if (m_frame % 2 == 0)
+		{
+			CreatePlayerAB(m_player);
+		}
+	}
+
+	// アフターバーナー
+	for (auto& pAB : m_abParticleList)
+	{
+		pAB->Update();
+	}
+
 	if (GetAsyncKeyState(VK_RETURN) & 0x8000)
 	{
 		if (!keyFlg[k_return])
 		{
-			nowScene = SceneType::Game1;
-			InitGame1();
+			if (m_sceneFlg == 0)
+			{
+				m_sceneFlg = 1;
+				m_frame = 0;
+			}
 		}
 		keyFlg[k_return] = true;
 	}
@@ -524,7 +656,37 @@ void Scene::UpdateTitle()
 	{
 		keyFlg[k_return] = false;
 	}
+	// 明るく
+	if (m_sceneFlg == 3)
+	{
+		if (m_frame > 20)
+		{
+			SceneFadeColor.w -= 1.0f / 30.0f;
+		}
 
+		if (m_frame > 20 + 30)
+		{
+			m_sceneFlg = 0;
+		}
+	}
+	// 暗く
+	if (m_sceneFlg == 1)
+	{
+		SceneFadeColor.w += 1.0f / 30.0f;
+
+		if (m_frame > 30)
+		{
+			m_pNowAnim = m_player->GetNowAnim();
+
+			nowScene = SceneType::Game1;
+			EraseAll();
+			InitGame1();
+			m_sceneFlg = 2;
+		}
+	}
+
+
+	CheckGame1Vec();
 }
 
 void Scene::CheckGame1Vec()
@@ -637,7 +799,7 @@ void Scene::UpdateGame1()
 	UpdateDebugEnemy();
 
 	// 敵のタイムライン更新
-	//UpdateEnemyTL();
+	UpdateEnemyTL();
 
 	// ビーム
 	m_beam.Update(beamNum, beamDeg);
@@ -675,6 +837,14 @@ void Scene::UpdateGame1()
 			ab->Update();
 		}
 	}
+	else	// もしゲームオーバーになったら
+	{
+		if (m_frame >= 120)
+		{
+			InitTitle();
+			nowScene = SceneType::Title;
+		}
+	}
 
 	// 追尾弾と敵の当たり判定
 	// H-Laser.cpp内参照
@@ -687,13 +857,28 @@ void Scene::UpdateGame1()
 
 	if (m_player->GetHitFlg() && m_playerLife > 0)
 	{
+		// 高速移動中は当たり判定小さめ(体感しづらい)
+		float _pBrad = 0.0f;
+		float _pErad = 0.0f;
+		if (m_player->GetRollFlg() != 2)
+		{
+			_pBrad = 26.0f;
+			_pErad = 34.0f;
+		}
+		else
+		{
+			_pBrad = 13.0f;
+			_pErad = 17.0f;
+		}
+
 		// 敵の弾と自機の当たり判定
 		for (int i = 0; i < m_bulletList.size(); i++)
 		{
 			Math::Vector2 _ppos = m_player->GetPos();
 			Math::Vector2 _bpos = m_bulletList[i]->GetPos();
 			Math::Vector2 _v = _ppos - _bpos;
-			if (_v.Length() < 20.0f)
+
+			if (_v.Length() < _pBrad)
 			{
 				m_player->OnHit();
 				m_playerLife -= 1;
@@ -706,9 +891,11 @@ void Scene::UpdateGame1()
 			Math::Vector2 _ppos = m_player->GetPos();
 			Math::Vector2 _bpos = m_enemyList[i]->GetPos();
 			Math::Vector2 _v = _ppos - _bpos;
-			if (_v.Length() < 32.0f)
+			if (_v.Length() < _pErad)
 			{
 				m_player->OnHit();
+				m_enemyList[i]->SetHP(0);
+				m_score += 10;
 				m_playerLife -= 1;
 				break;
 			}
@@ -722,6 +909,8 @@ void Scene::UpdateGame1()
 		{
 			CreateExplosionA(ParticleType::ExplosionA, m_player->GetPos());
 			m_gameOverFlg = true;
+			m_frame = 0;
+			m_sceneFlg = 3;
 		}
 	}
 
@@ -790,7 +979,8 @@ void Scene::UpdateGame1()
 	}
 
 	// ボス
-	if (m_boss != nullptr)
+	//if (m_boss != nullptr)
+	if (m_bossFlg > 0)
 	{
 		m_boss->Update();
 	}
@@ -825,32 +1015,144 @@ void Scene::UpdateGame1()
 	{
 		if (!keyFlg[k_return])
 		{
-			EraseAll();
-			nowScene = SceneType::Result;
-			InitResult();
+			if (m_sceneFlg == 0)
+			{
+				m_sceneFlg = 4;
+				m_frame = 0;
+			}
 		}
 		keyFlg[k_return] = true;
 	}
 	else
 	{
 		keyFlg[k_return] = false;
+	}
+
+	// 明るく & フレーム初期化
+	if (m_sceneFlg == 2)
+	{
+		SceneFadeColor.w -= 1.0f / 30.0f;
+
+		if (m_frame > 30)
+		{
+			m_sceneFlg = 0;
+			m_frame = 0;
+
+			m_min = 0;
+			m_sec = 0;
+		}
+	}
+	// 暗く→タイトル
+	if (m_sceneFlg == 3)
+	{
+		if (m_frame > 60)
+		{
+			SceneFadeColor.w += 1.0f / 60.0f;
+		}
+
+		if (m_frame > 60 + 60)
+		{
+			m_sceneFlg = 3;
+			InitTitle();
+			nowScene = SceneType::Title;
+		}
+	}
+	// 暗く→リザルト
+	if (m_sceneFlg == 4)
+	{
+		if (m_frame > 60)
+		{
+			SceneFadeColor.w += 1.0f / 60.0f;
+		}
+
+		if (m_frame > 60 + 60)
+		{
+			m_sceneFlg = 2;
+
+			EraseAll();
+			nowScene = SceneType::Result;
+			InitResult();
+		}
 	}
 }
 
 void Scene::UpdateResult()
 {
+	m_frame++;
+
+	m_resultMat.s = Math::Matrix::CreateScale(1.0f);
+	m_resultMat.r = Math::Matrix::CreateRotationZ(0.0f);
+	m_resultMat.t = Math::Matrix::CreateTranslation(m_resultPos.x, m_resultPos.y, 0.0f);
+	m_resultMat.Mix();
+
+	m_resultCPMat = Math::Matrix::CreateTranslation(0.0f, 0.0f, 0.0f);
+
+	// 海のスクロール
+	m_titleScrPos.y -= 2.0f;
+	if (m_titleScrPos.y <= -720)
+	{
+		m_titleScrPos.y = 0.0f;
+	}
+	m_titleScrMat[0] = Math::Matrix::CreateTranslation(m_titleScrPos.x, m_titleScrPos.y, 0.0f);
+	m_titleScrMat[1] = Math::Matrix::CreateTranslation(m_titleScrPos.x, m_titleScrPos.y + 720.0f, 0.0f);
+
+	// 自機
+	m_player->Update();
+
+	// 自機アフターバーナー
+	/*if (m_player->GetMoveVec().y >= 0.0f)
+	{
+		if (m_frame % 2 == 0)
+		{
+			CreatePlayerAB(m_player);
+		}
+	}*/
+
+	// アフターバーナー
+	/*for (auto& pAB : m_abParticleList)
+	{
+		pAB->Update();
+	}*/
+
+	
+	// 明るく
+	if (m_sceneFlg == 2)
+	{
+		SceneFadeColor.w -= 1.0f / 30.0f;
+
+		if (m_frame > 30.0f)
+		{
+			m_sceneFlg = 0;
+		}
+	}
+
 	if (GetAsyncKeyState(VK_RETURN) & 0x8000)
 	{
 		if (!keyFlg[k_return])
 		{
-			nowScene = SceneType::Title;
-			InitTitle();
+			if (m_sceneFlg == 0)
+			{
+				m_sceneFlg = 1;
+				m_frame = 0;
+			}
 		}
 		keyFlg[k_return] = true;
 	}
 	else
 	{
 		keyFlg[k_return] = false;
+	}
+
+	if (m_sceneFlg == 1)
+	{
+		SceneFadeColor.w += 1.0f / 60.0f;
+
+		if (m_frame > 60)
+		{
+			m_sceneFlg = 3;
+			nowScene = SceneType::Title;
+			InitTitle();
+		}
 	}
 }
 
@@ -863,7 +1165,10 @@ void Scene::Init()
 	SceneFadeColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 	SceneFadeColor.w = 0.0f;
 
-	for (int i = 0; i < 255; i++) keyFlg[i] = false;
+	for (int i = 0; i < k_end; i++)
+	{
+		keyFlg[i] = false;
+	}
 
 	m_frame = 0;
 	m_titleMat = Math::Matrix::Identity;
@@ -871,12 +1176,32 @@ void Scene::Init()
 	m_titleTex1.Load("Data/Texture/Title/RaySeeker.png");
 	m_titleTex2.Load("Data/Texture/Title/right.png");
 
+	m_resultTex.Load("Data/Texture/Misc/ResultScore.png");
+	m_resultPos = { -180.0f + 200.0f, 0.0f };
+	m_resultMat.Init();
+
+	m_resultBackTex.Load("Data/Texture/Misc/resultBack.png");
+	m_resultCTex.Load("Data/Texture/Misc/ResultClear.png");
+	m_resultPTex.Load("Data/Texture/Misc/pressenterR.png");
+
 	InitTitle();
 }
 
 void Scene::InitTitle()
 {
+	m_frame = 0;
 
+	m_titleScrPos = { 0.0f, 0.0f };	// スクロール用
+	m_titleScrMat[0] = Math::Matrix::Identity;
+	m_titleScrMat[1] = Math::Matrix::Identity;
+
+	// プレイヤー
+	m_player = std::make_shared<Player>();
+	m_player->SetOwner(this);
+	m_player->Init(m_pNowAnim);
+	m_player->SetTexture("Data/Texture/Player/player384x1280.png");
+
+	CreatePlayerAB(m_player);
 }
 
 void Scene::InitGame1()
@@ -884,9 +1209,12 @@ void Scene::InitGame1()
 	m_gameOverFlg = false;
 	m_score = 0;
 	m_playerLife = 3;
-	m_bombNum = 6;
+	m_bombNum = 3;
+	m_bossFlg = 0;
 
 	m_frame = 0;
+	m_min = 0;
+	m_sec = 0;
 
 	// ターゲット
 	m_targetNum = 0;
@@ -906,7 +1234,7 @@ void Scene::InitGame1()
 	// プレイヤー
 	m_player = std::make_shared<Player>();
 	m_player->SetOwner(this);
-	m_player->Init();
+	m_player->Init(m_pNowAnim);
 	m_player->SetTexture("Data/Texture/Player/player384x1280.png");
 
 	CreatePlayerAB(m_player);
@@ -948,6 +1276,14 @@ void Scene::InitGame1()
 
 void Scene::InitResult()
 {
+	m_frame = 0;
+
+	// ===== スコア ===================================================
+	m_NumberTex.Load("Data/Texture/Misc/number.png");
+	zeroFlg = false;
+	d_numFont = 0;
+	digit = 0;
+	for (int i = 0; i < Max_digit; i++) d_num[i] = 0;
 }
 
 void Scene::Release()
@@ -983,14 +1319,17 @@ void Scene::ReleaseTitle()
 	m_titleTex0.Release();
 	m_titleTex1.Release();
 	m_titleTex2.Release();
+	
 }
 
 void Scene::ReleaseGame1()
 {
+
 }
 
 void Scene::ReleaseResult()
 {
+	m_resultTex.Release();
 }
 
 void Scene::ImGuiUpdate()
@@ -1009,79 +1348,129 @@ void Scene::ImGuiUpdate()
 		ImGui::SameLine();
 		if (ImGui::Button(u8"＞")) if (m_debugNowPage < 10) m_debugNowPage++;
 		ImGui::SameLine();
-		ImGui::Text("FPS:%d|Scene:%s", APP.m_fps, nowSceneStr);
+		ImGui::Text("FPS:%d", APP.m_fps);
 
 		//Math::Vector4 _DebugColor = m_player->GetDebugColor();
 
-		switch (m_debugNowPage)
+		if (nowScene == SceneType::Title)
 		{
-		case 0:
-			ImGui::Text(u8"いろいろ"); ImGui::SameLine();
-			ImGui::Checkbox(":Debug", &m_debugFlg);
-			ImGui::Text("m_frame:[%d] second:[%d]", m_frame, m_frame / 60);
-			//ImGui::Text("PBullet[%d] Item[%d]", m_player->GetBulletNum(), m_itemList.size());
-			ImGui::Text("Enemy.size[%d] BulletList.size[%d]", m_enemyList.size(), m_bulletList.size());
-			ImGui::Text("PShootFlg:%d PShootTime:%d", m_player->GetShootFlg(), m_player->GetShootTime());
-			ImGui::SliderInt("beamNum", &beamNum, 0, 300, "%d");
-			ImGui::SliderFloat("beamDeg", &beamDeg, 0.0f, 720.0f);
-			break;
+			switch (m_debugNowPage)
+			{
+			case 0:
+				ImGui::Text(u8"いろいろ");
 
-		case 1:
-			ImGui::Text(u8"[プレイヤー関連]");
-			
-			// フレームとか変数
-			ImGui::Text("m_frame:%.1f", m_player->GetFrame0());
-			
-			ImGui::Text("hLaser.size:%d", m_hLaserList.size());
+				break;
 
-			// プレイヤーの移動速度
-			ImGui::Text("moveVec : %.2f, %.2f", m_player->GetMoveVec().x, m_player->GetMoveVec().y);
-			
-			// プレイヤー切り取り範囲
-			ImGui::Text("NowAnim:");
-			ImGui::SameLine();
-			if (ImGui::Button("-")) m_player->AddNowAnim(0, -1);
-			ImGui::SameLine();
-			if (ImGui::Button("+")) m_player->AddNowAnim(0, +1);
+			case 1:
 
-			// プレイヤーの色
-			//ImGui::ColorEdit4("PlayerColor", &m_playerColor.x);
-			//m_player->SetPColor(m_playerColor);
+				break;
 
-			break;
+			case 2:
 
-		case 2:
-			ImGui::Text(u8"[ウェブ関連]");
-			// サイズ
-			ImGui::Text("Length:%.1f", m_player->GetWebBsize());
-			// 角度
-			ImGui::Text("Deg:%.1f", m_player->GetWebBdegAdd());
-			// 色
-			//ImGui::SliderFloat("DebugColor:R", &_DebugColor.x, 0.0f, 1.0f);
-			//ImGui::SliderFloat("DebugColor:G", &_DebugColor.y, 0.0f, 1.0f);
-			//ImGui::SliderFloat("DebugColor:B", &_DebugColor.z, 0.0f, 1.0f);
-			//ImGui::SliderFloat("DebugColor:A", &_DebugColor.w, 0.0f, 1.0f);
+				break;
 
-			//ImGui::Text("webA.deg:%.2f", m_player->m_webA.degMove);
-			break;
-		
-		case 3:
-			ImGui::Text(u8"[マップ関連]");
-			ImGui::SliderInt("nowTex", &m_map->m_nowTex, 0, 1);
-			break;
+			default:
+				ImGui::Text(u8"There's nothing here, yet\n[このページにはまだ何も有馬温泉]");
+				break;
+			}
+		}
+		if (nowScene == SceneType::Game1)
+		{
+			if (m_frame % (60 * 60) == 0) m_min++;
+			if (m_frame % 60 == 0) m_sec++;
 
-		case 4:
-			ImGui::Checkbox(u8":加算合成", &AddBlend);
-			ImGui::Text("ParticleList.size[%d]", m_particleList.size());
-			ImGui::Text("abParticleList.size[%d]", m_abParticleList.size());
-			ImGui::SliderFloat("LightHSize", &LightHSize, 0.0f, 100.0f, "%.2f");
-			break;
-		case 5:
-			ImGui::Text(u8"[UI関連]");
+			switch (m_debugNowPage)
+			{
+			case 0:
+				ImGui::Text(u8"いろいろ"); ImGui::SameLine();
+				ImGui::Checkbox(":Debug", &m_debugFlg);
+				ImGui::Text("m_frame:[%d] TIME:[%02d:%02d]", m_frame, m_min, m_sec);
+				//ImGui::Text("PBullet[%d] Item[%d]", m_player->GetBulletNum(), m_itemList.size());
+				ImGui::Text("Enemy.size[%d] BulletList.size[%d]", m_enemyList.size(), m_bulletList.size());
+				ImGui::Text("PShootFlg:%d PShootTime:%d", m_player->GetShootFlg(), m_player->GetShootTime());
+				ImGui::SliderInt("beamNum", &beamNum, 0, 300, "%d");
+				ImGui::SliderFloat("beamDeg", &beamDeg, 0.0f, 720.0f);
+				break;
 
-		default:
-			ImGui::Text(u8"There's nothing here, yet\n[このページにはまだ何も有馬温泉]");
-			break;
+			case 1:
+				ImGui::Text(u8"[プレイヤー関連]");
+
+				// フレームとか変数
+				ImGui::Text("m_frame:%.1f", m_player->GetFrame0());
+
+				ImGui::Text("hLaser.size:%d", m_hLaserList.size());
+
+				// プレイヤーの移動速度
+				ImGui::Text("moveVec : %.2f, %.2f", m_player->GetMoveVec().x, m_player->GetMoveVec().y);
+
+				// プレイヤー切り取り範囲
+				ImGui::Text("NowAnim:");
+				ImGui::SameLine();
+				if (ImGui::Button("-")) m_player->AddNowAnim(0, -1);
+				ImGui::SameLine();
+				if (ImGui::Button("+")) m_player->AddNowAnim(0, +1);
+
+				// プレイヤーの色
+				//ImGui::ColorEdit4("PlayerColor", &m_playerColor.x);
+				//m_player->SetPColor(m_playerColor);
+
+				break;
+
+			case 2:
+				ImGui::Text(u8"[ウェブ関連]");
+				// サイズ
+				ImGui::Text("Length:%.1f", m_player->GetWebBsize());
+				// 角度
+				ImGui::Text("Deg:%.1f", m_player->GetWebBdegAdd());
+				// 色
+				//ImGui::SliderFloat("DebugColor:R", &_DebugColor.x, 0.0f, 1.0f);
+				//ImGui::SliderFloat("DebugColor:G", &_DebugColor.y, 0.0f, 1.0f);
+				//ImGui::SliderFloat("DebugColor:B", &_DebugColor.z, 0.0f, 1.0f);
+				//ImGui::SliderFloat("DebugColor:A", &_DebugColor.w, 0.0f, 1.0f);
+
+				//ImGui::Text("webA.deg:%.2f", m_player->m_webA.degMove);
+				break;
+
+			case 3:
+				ImGui::Text(u8"[マップ関連]");
+				ImGui::SliderInt("nowTex", &m_map->m_nowTex, 0, 1);
+				break;
+
+			case 4:
+				ImGui::Checkbox(u8":加算合成", &AddBlend);
+				ImGui::Text("ParticleList.size[%d]", m_particleList.size());
+				ImGui::Text("abParticleList.size[%d]", m_abParticleList.size());
+				ImGui::SliderFloat("LightHSize", &LightHSize, 0.0f, 100.0f, "%.2f");
+				break;
+			case 5:
+				ImGui::Text(u8"[UI関連]");
+
+			default:
+				ImGui::Text(u8"There's nothing here, yet\n[このページにはまだ何も有馬温泉]");
+				break;
+			}
+		}
+		if (nowScene == SceneType::Result)
+		{
+			switch (m_debugNowPage)
+			{
+			case 0:
+				ImGui::Text(u8"いろいろ");
+				ImGui::Text("frame[%d]", m_frame);
+				break;
+
+			case 1:
+
+				break;
+
+			case 2:
+
+				break;
+
+			default:
+				ImGui::Text(u8"There's nothing here, yet\n[このページにはまだ何も有馬温泉]");
+				break;
+			}
 		}
 	}
 	ImGui::End();
@@ -1089,145 +1478,309 @@ void Scene::ImGuiUpdate()
 
 void Scene::UpdateEnemyTL()
 {
-	switch (m_frame)
+	if (m_sceneFlg == 0)
 	{
-	// - - - - - - - - - - [00:00] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-	case 60 * 0:
+		if (m_frame > (60*60))
+		{
+			m_min += 1;
+		}
+		if (m_frame % 60 == 0)
+		{
+			m_sec += 1;
+		}
 
-		break;
+		switch (m_frame)
+		{
+		// - - - - - - - - - - [00:00] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+		case 60 * 0:
+			break;
 
-	case 60 * 1:
-		CreateEnemy({ -100.0f, 370.0f }, ep_1);
-		break;
+		case 60 * 1:
 
-	case 60 * 2:
-		CreateEnemy({ -100.0f, 370.0f }, ep_1);
-		break;
+			break;
 
-	case 60 * 3:
+		case 60 * 2:
+			CreateEnemy({ -250.0f, 370.0f }, ep_5, 80);
+			CreateEnemy1({   0.0f, 370.0f }, ep_5, 60);
+			CreateEnemy({ +250.0f, 370.0f }, ep_5, 50);
+			break;
 
-		break;
+		case 60 * 3:
+			//CreateEnemy({ -100.0f, 370.0f }, ep_1, 50);	// 下→左
+			break;
 
-	case 60 * 4:
-		CreateEnemy({ 100.0f, 370.0f }, ep_2);
-		break;
-	// - - - - - - - - - - [00:05] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-	case 60 * 5:
-		CreateEnemy({ 100.0f, 370.0f }, ep_2);
-		break;
+		case 60 * 4:
+			CreateEnemy({ -100.0f, 370.0f }, ep_1, 50);
+			break;
+		// - - - - - - - - - - [00:05] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+		case 60 * 5:
 
-	case 60 * 6:
+			break;
 
-		break;
+		case 60 * 6:
+			CreateEnemy({ 100.0f, 370.0f }, ep_2, 50);	// 下→右
+			break;
 
-	case 60 * 7:
+		case 60 * 7:
+			//CreateEnemy({ 100.0f, 370.0f }, ep_2, 50);
+			break;
 
-		break;
+		case 60 * 8:
+			CreateEnemy({ 100.0f, 370.0f }, ep_2, 50);
+			break;
 
-	case 60 * 8:
+		case 60 * 9:
 
-		break;
+			break;
+		// - - - - - - - - - - [00:10] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+		case 60 * 10:
+			CreateEnemy1({ scrLeft + 110.0f, 370.0f }, ep_5, 75);	// 停止
+			break;
 
-	case 60 * 9:
+		case 60 * 11:
+			CreateEnemy({ scrLeft + 180.0f, 400.0f }, ep_5, 30);	// 停止
+			break;
 
-		break;
-	// - - - - - - - - - - [00:10] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
-	case 60 * 10:
+		case 60 * 12:
+			CreateEnemy1({ scrRight - 110.0f, 370.0f }, ep_5, 75);	// 停止
+			break;
 
-		break;
+		case 60 * 13:
+			CreateEnemy({ scrRight - 180.0f, 400.0f }, ep_5, 30);	// 停止
+			break;
 
-	case 60 * 11:
+		case 60 * 14:
+			CreateEnemy({ 0.0f, 370.0f }, ep_5, 50);	// 上から下
+			break;
+		// - - - - - - - - - - [00:15] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+		case 60 * 15:
 
-		break;
+			break;
 
-	case 60 * 12:
+		case 60 * 16:
+			CreateEnemy({ scrLeft + 200.0f, 370.0f }, ep_2, 50);	// 右へ
+			break;
 
-		break;
+		case 60 * 17:
+			CreateEnemy({ scrLeft + 200.0f, 370.0f }, ep_2, 50);
+			break;
 
-	case 60 * 13:
+		case 60 * 18:
 
-		break;
+			break;
 
-	case 60 * 14:
+		case 60 * 19:
+			CreateEnemy({ scrRight - 200.0f, 370.0f }, ep_1, 50);
+			break;
+		// - - - - - - - - - - [00:20] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+		case 60 * 20:
 
-		break;
-	// - - - - - - - - - - [00:15] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
-	case 60 * 15:
+			break;
 
-		break;
+		case 60 * 21:
+			CreateEnemy({ scrRight - 200.0f, 370.0f }, ep_1, 50); // 左へ
+			break;
 
-	case 60 * 16:
+		case 60 * 22:
 
-		break;
+			break;
 
-	case 60 * 17:
+		case 60 * 23:
+			CreateEnemy({ scrLeft - 64.0f, 200.0f }, ep_3, 90);	// 左から右へ
+			CreateEnemy1({ scrLeft+ 200.0f, 370.0f }, ep_5, 60);
+			break;
 
-		break;
+		case 60 * 24:
 
-	case 60 * 18:
+			break;
+		// - - - - - - - - - - [00:25] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+		case 60 * 25:
+			CreateEnemy1({ scrLeft - 64.0f, 280.0f }, ep_3, 90);	// 左から右へ
+			CreateEnemy({ scrRight - 200.0f, 370.0f }, ep_5, 60);
+			break;
 
-		break;
+		case 60 * 26:
 
-	case 60 * 19:
+			break;
 
-		break;
-	// - - - - - - - - - - [00:20] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
-	case 60 * 20:
+		case 60 * 27:
+			CreateEnemy({ scrRight + 64.0f, 200.0f }, ep_4, 90);	// 左から右へ
+			break;
 
-		break;
+		case 60 * 28:
 
-	case 60 * 21:
+			break;
 
-		break;
+		case 60 * 29:
+			// 並べて配置
+			CreateEnemy({ scrLeft + 150.0f, 370.0f }, ep_5, 80);
+			CreateEnemy1({ scrLeft + 350.0f, 450.0f }, ep_5, 80);
+			CreateEnemy1({ scrLeft + 640.0f, 450.0f }, ep_5, 80);
+			CreateEnemy1({ scrRight - 350.0f, 450.0f }, ep_5, 80);
+			CreateEnemy({ scrRight - 150.0f, 370.0f }, ep_5, 80);
+			break;
+		// - - - - - - - - - - [00:30] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+		case 60 * 30:
 
-	case 60 * 22:
+			break;
 
-		break;
+		case 60 * 31:
+			CreateEnemy1({ -200.0f, 370.0f }, ep_5, 70);	// 停止
+			CreateEnemy1({ +200.0f, 370.0f }, ep_5, 70);	// 停止
+			break;
 
-	case 60 * 23:
+		case 60 * 32:
+			CreateEnemy({ scrRight + 64.0f, 280.0f }, ep_4, 90);	// 左から右へ
+			break;
 
-		break;
+		case 60 * 33:
+			CreateEnemy1({ scrLeft + 100.0f, 370.0f }, ep_5, 70);	// 停止
+			CreateEnemy1({ scrRight - 200.0f, 370.0f }, ep_5, 70);	// 停止
+			break;
 
-	case 60 * 24:
+		case 60 * 34:
+			CreateEnemy1({ -200.0f, 370.0f }, ep_5, 60);	// 停止
+			CreateEnemy1({ +200.0f, 370.0f }, ep_5, 60);	// 停止
+			break;
+		// - - - - - - - - - - [00:35] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+		case 60 * 35:
+			CreateEnemy({ scrRight + 64.0f, 200.0f }, ep_4, 60);
+			break;
 
-		break;
-	// - - - - - - - - - - [00:25] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
-	case 60 * 25:
+		case 60 * 36:
+			CreateEnemy({ scrLeft - 64.0f, 300.0f }, ep_3, 60);
+			break;
 
-		break;
+		case 60 * 37:
+			CreateEnemy({ scrLeft - 64.0f, 200.0f }, ep_6, 90);	// 左から右へ
+			break;
 
-	case 60 * 26:
+		case 60 * 38:
+			CreateEnemy1({ -200.0f, 370.0f }, ep_5, 60);	// 停止
+			CreateEnemy1({ +200.0f, 370.0f }, ep_5, 60);	// 停止
+			break;
 
-		break;
+		case 60 * 39:
+			CreateEnemy({ scrRight + 64.0f, 300.0f }, ep_7, 90);	// 右から左へ
+			break;
+		// - - - - - - - - - - [00:40] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+		case 60 * 40:
+			CreateEnemy({ 200.0f, 370.0f }, ep_5, 70);	// 上から下→停止
+			break;
 
-	case 60 * 27:
+		case 60 * 41:
+			CreateEnemy1({ scrLeft + 150.0f, 370.0f }, ep_8, 80);	// 左から右
+			CreateEnemy1({ scrRight - 150.0f, 370.0f }, ep_9, 80);	// 右から左
+			break;
 
-		break;
+		case 60 * 42:
+			CreateEnemy1({ -200.0f, 370.0f }, ep_5, 50);	// 上から下→停止
+			break;
 
-	case 60 * 28:
+		case 60 * 43:
 
-		break;
+			break;
 
-	case 60 * 29:
+		case 60 * 44:
+			CreateEnemy({ scrLeft - 64.0f, 200.0f }, ep_3, 60);
+			break;
+		// - - - - - - - - - - [00:45] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+		case 60 * 45:
+			CreateEnemy({ scrLeft - 64.0f, 300.0f }, ep_4, 60);
+			break;
 
-		break;
-	// - - - - - - - - - - [00:30] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
-	case 60 * 30:
+		case 60 * 46:
+			CreateEnemy({ -200.0f, 370.0f }, ep_5, 60);	// 停止
+			CreateEnemy({ +200.0f, 370.0f }, ep_5, 60);	// 停止
+			break;
 
-		break;
+		case 60 * 47:
+			CreateEnemy1({ scrLeft - 64.0f, 250.0f }, ep_3, 60);
+			break;
+
+		case 60 * 48:
+			CreateEnemy1({ scrRight - 64.0f, 300.0f }, ep_4, 60);
+			break;
+
+		case 60 * 49:
+			CreateEnemy({ 0.0f, 370.0f }, ep_5, 60);
+			break;
+		// - - - - - - - - - - [00:50] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+		case 60 * 50:
+			// 並べて配置
+			CreateEnemy({ scrLeft + 150.0f, 370.0f }, ep_5, 80);
+			//CreateEnemy1({ scrLeft + 300.0f, 450.0f }, ep_5, 80);
+			CreateEnemy1({ scrLeft + 640.0f, 450.0f }, ep_5, 80);
+			//CreateEnemy1({ scrRight - 150.0f, 370.0f }, ep_5, 80);
+			CreateEnemy({ scrRight - 350.0f, 370.0f }, ep_5, 80);
+			break;
+
+		case 60 * 51:
+
+			break;
+
+		case 60 * 52:
+
+			break;
+
+		case 60 * 53:
+			CreateEnemy({ scrLeft - 64.0f, 200.0f }, ep_6, 70);	// 左から右へ
+			break;
+
+		case 60 * 54:
+			CreateEnemy({ scrRight + 64.0f, 200.0f }, ep_7, 70);	// 右から左へ
+			break;
+		// - - - - - - - - - - [00:55] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+		case 60 * 55:
+			// 並べて配置
+			CreateEnemy({ scrLeft + 150.0f, 370.0f }, ep_5, 80);
+			//CreateEnemy1({ scrLeft + 350.0f, 450.0f }, ep_5, 80);
+			CreateEnemy1({ scrLeft + 640.0f, 450.0f }, ep_5, 80);
+			//CreateEnemy1({ scrRight - 350.0f, 450.0f }, ep_5, 80);
+			CreateEnemy({ scrRight - 150.0f, 370.0f }, ep_5, 80);
+			break;
+
+		case 60 * 56:
+			//CreateEnemy({ scrRight + 100.0f, 370.0f }, ep_4, 70);
+			//CreateEnemy({ scrRight + 200.0f, 370.0f }, ep_4, 70);
+			break;
+
+		case 60 * 57:
+
+			break;
+
+		case 60 * 58:
+
+			break;
+
+		case 60 * 59:
+			m_sceneFlg = 4;
+			m_frame = 0;
+			break;
+
+
+		// ===== １分３０秒 ===================================================
+		case 60 * (60 + 30) :
+			//CreateBoss({ -100.0f, 100.0f }, 1);
+			//m_bossFlg = 1;
+			break;
+
+
+		}
+
 	}
 }
 
 void Scene::UpdateDebugEnemy()
 {
-		// 敵push_back
+	// 敵push_back
 	if (GetKey(VK_NUMPAD0))
 	{
 		if (!keyFlg[k_np_0])
 		{
 			for (int i = 0; i < 3; i++)
 			{
-				CreateEnemy1({ -300.0f + i * 300.0f, 150.0f }, 0);
+				CreateEnemy1({ -300.0f + i * 300.0f, 150.0f }, 0, 60);
 			}
 		}
 		keyFlg[k_np_0] = true;
@@ -1306,36 +1859,119 @@ void Scene::UpdateDebugEnemy()
 	{
 		keyFlg[k_l] = false;
 	}
+	// デバッグ（残機増やす）
+	if (GetAsyncKeyState('O') & 0x8000)
+	{
+		if (!keyFlg[k_o])
+		{
+			if (m_playerLife < 9)
+			{
+				m_playerLife++;
+			}
+		}
+		keyFlg[k_o] = true;
+	}
+	else
+	{
+		keyFlg[k_o] = false;
+	}
 }
 
 void Scene::DebugKey1()
 {
 	//CreateEnemy({ scrLeft +  160.0f, scrTop -  200.0f }, ep_stop);
-	CreateEnemy({ scrLeft +  300.0f, scrTop -  115.0f }, ep_stop);
-	CreateEnemy({ scrLeft +  490.0f, scrTop -   82.0f }, ep_stop);
+	CreateEnemy({ scrLeft +  300.0f, scrTop -  115.0f }, ep_stop, 40);
+	CreateEnemy({ scrLeft +  490.0f, scrTop -   82.0f }, ep_stop, 35);
 
-	CreateEnemy({ scrLeft +  711.0f, scrTop -   71.0f }, ep_stop);
+	CreateEnemy({ scrLeft +  711.0f, scrTop -   71.0f }, ep_stop, 45);
 
-	CreateEnemy({ scrLeft +  900.0f, scrTop -   91.0f }, ep_stop);
-	CreateEnemy({ scrLeft + 1045.0f, scrTop -  145.0f }, ep_stop);
+	CreateEnemy({ scrLeft +  900.0f, scrTop -   91.0f }, ep_stop, 30);
+	CreateEnemy({ scrLeft + 1045.0f, scrTop -  145.0f }, ep_stop, 40);
 	//CreateEnemy({ scrLeft + 1160.0f, scrTop -  230.0f }, ep_stop);
 }
 
 void Scene::DebugKey2()
 {
-	CreateEnemy({ scrLeft + 300.0f, scrTop - 170.0f }, ep_d1);
-	CreateEnemy({ scrLeft + 600.0f, scrTop - 200.0f }, ep_d1);
-	CreateEnemy({ scrLeft + 900.0f, scrTop - 170.0f }, ep_d1);
+	CreateEnemy({ scrLeft + 300.0f, scrTop - 170.0f }, ep_d1, 40);
+	CreateEnemy({ scrLeft + 600.0f, scrTop - 200.0f }, ep_d1, 30);
+	CreateEnemy({ scrLeft + 900.0f, scrTop - 170.0f }, ep_d1, 40);
 
-	CreateEnemy({ scrLeft + 100.0f, scrTop - 60.0f }, ep_d1);
-	CreateEnemy({ scrLeft + 400.0f, scrTop - 100.0f }, ep_d1);
-	CreateEnemy({ scrLeft + 700.0f, scrTop - 60.0f }, ep_d1);
+	CreateEnemy({ scrLeft + 100.0f, scrTop - 60.0f }, ep_d1, 40);
+	CreateEnemy({ scrLeft + 400.0f, scrTop - 100.0f }, ep_d1,30);
+	CreateEnemy({ scrLeft + 700.0f, scrTop - 60.0f }, ep_d1, 40);
 
-	CreateEnemy({ scrLeft + 150.0f, scrTop - 400.0f }, ep_d2);
-	CreateEnemy({ scrRight - 150.0f, scrTop - 400.0f }, ep_d2);
+	CreateEnemy({ scrLeft + 150.0f, scrTop - 400.0f }, ep_d2, 30);
+	CreateEnemy({ scrRight - 150.0f, scrTop - 400.0f }, ep_d2, 40);
 }
 
 void Scene::DebugKey3()
 {
-	CreateEnemy1({ scrLeft + 300.0f, scrTop }, ep_5);
+	CreateEnemy1({ scrLeft + 300.0f, scrTop }, ep_5, 35);
+}
+
+
+void Scene::DrawNumber(int x, Math::Vector2 num_Pos, int s)
+{
+	digit = (int)log10(x);	// 桁数
+	if (x <= 0) digit = 0;	// これがないとなぜか-114514になるので追加
+
+	//d_num[7] = x / 10000000; // 一千万
+
+	//x -= d_num[7] * 10000000;
+
+	d_num[6] = x / 1000000; // 百万
+
+	x -= d_num[6] * 1000000;
+
+	d_num[5] = x / 100000; // 十万
+
+	x -= d_num[5] * 100000;
+
+	d_num[4] = x / 10000; // 一万
+
+	x -= d_num[4] * 10000;
+
+	d_num[3] = x / 1000; // 千
+
+	x -= d_num[3] * 1000;
+
+	d_num[2] = x / 100; // 百
+
+	x -= d_num[2] * 100;
+
+	d_num[1] = x / 10; // 十
+
+	x -= d_num[1] * 10;
+
+	d_num[0] = x; //一
+
+	zeroFlg = false;
+
+	switch (s)
+	{
+	case 0:
+
+		//for (int i = 0; i < Max_digit; i++)
+		for (int i = 0; i <= digit; i++)
+		{
+			//if (d_num[i] > 0) zeroFlg = true;
+
+			//if (zeroFlg == true)
+			{
+				Math::Matrix l_smat = Math::Matrix::CreateScale(1.25f);
+				Math::Matrix l_mat = l_smat * Math::Matrix::CreateTranslation(num_Pos.x + i * -40, num_Pos.y, 0);
+				DrawImg(l_mat, &m_NumberTex, Math::Rectangle(d_num[i] * 40, 0, 40, 60), 1.0f);
+			}
+		}
+		break;
+	case 1:
+
+		for (int i = 0; i < 6; i++)
+		{
+			Math::Matrix l_smat = Math::Matrix::CreateScale(1.25f);
+			Math::Matrix l_mat = l_smat *  Math::Matrix::CreateTranslation(num_Pos.x + i * (-40.0f * 1.25f), num_Pos.y, 0);
+			DrawImg(l_mat, &m_NumberTex, Math::Rectangle(d_num[i] * 40, 0, 40, 60), 1.0f);
+		}
+		break;
+	}
 }

@@ -2,7 +2,7 @@
 #include "../../../Scene/Scene.h"
 #include "../../../Object/Player/Player.h"
 
-void Enemy::Init(int _flg)
+void Enemy::Init(int _flg, int _stime)
 {
 	m_objType = ObjType::Enemy;
 
@@ -10,7 +10,8 @@ void Enemy::Init(int _flg)
 	m_movePtn = _flg;
 	m_frame2 = 0;
 
-	m_shotTime = rand() % (2 * 30) + 30;
+	//m_shotTime = rand() % (2 * 30) + 30;
+	m_shotTime = _stime;
 
 	// ロックオン
 	m_Lock.flg = false;
@@ -19,7 +20,7 @@ void Enemy::Init(int _flg)
 	m_Lock.mat.Init();
 	m_Lock.rect = Math::Rectangle(100, 0, 70, 70);
 
-	m_hp = 2;
+	m_hp = 4;
 
 	// 描画関連
 	m_nowAnimX = 0;
@@ -41,7 +42,7 @@ void Enemy::Init(int _flg)
 	}
 
 	m_dColor = C_RED;
-	m_deg = 0.0f;
+	m_deg = 180.0f + 90.0f;
 	m_scale = { 0.65f, 0.65f };
 	//m_rad = { m_ImgSizeX * m_scale.x, m_ImgSizeY * m_scale.y };
 	m_rad = { m_AlphaRect.width * m_scale.x, m_AlphaRect.height * m_scale.y };
@@ -63,12 +64,16 @@ void Enemy::Update(Math::Vector2 ppos)
 	// 弾のフラグチェック＆削除
 	//m_pOwner->DeleteBullet1();
 
-	Math::Vector2 Cpos = {};
-	Cpos.x = ppos.x - m_pos.x;
-	Cpos.y = ppos.y - m_pos.y;
+	// 自機に向ける
+	if (m_pOwner->GetPlayerHitFlg())
+	{
+		Math::Vector2 Cpos = {};
+		Cpos.x = ppos.x - m_pos.x;
+		Cpos.y = ppos.y - m_pos.y;
 
-	float Cradian = atan2(Cpos.y, Cpos.x);
-	m_deg = DirectX::XMConvertToDegrees(Cradian);
+		float Cradian = atan2(Cpos.y, Cpos.x);
+		m_deg = DirectX::XMConvertToDegrees(Cradian);
+	}
 
 	m_frame++;
 	if (m_frame % 3 == 0)
@@ -133,7 +138,7 @@ void Enemy::Update(Math::Vector2 ppos)
 		if (m_frame > 3 * 3)
 		{
 			m_flg = BaseBitState::st_dead;
-			m_pOwner->m_score += 50;
+			m_pOwner->m_score += 200;
 		}
 	}
 
@@ -211,9 +216,9 @@ void Enemy::UpdateMovePattern()
 		{
 			m_move = { 0.0f, -3.0f };
 		}
-		if (m_frame == 60)
+		if (m_frame == 50)
 		{
-			m_move = { -3.0f, -0.5f };
+			m_move = { -2.0f, -0.5f };
 		}
 		break;
 
@@ -223,54 +228,63 @@ void Enemy::UpdateMovePattern()
 		{
 			m_move = { 0.0f, -3.0f };
 		}
-		if (m_frame == 60)
+		if (m_frame == 80)
 		{
-			m_move = { +3.0f, -0.5f };
+			m_move = { +2.0f, -0.5f };
 		}
 		break;
 
-	case ep_3:	// 左から右にループ
-		m_move.x = 6.0f;
-		if (m_pos.x > scrRight + 32.0f)
+	case ep_3:	// 左から右
+		m_move.x = 4.0f;
+		/*if (m_pos.x > scrRight + 32.0f)
 		{
 			m_pos.x = scrLeft - 32.0f;
-		}
+		}*/
 		break;
 		
-	case ep_4:	// 右から左にループ
-		m_move.x = -6.0f;
-		if (m_pos.x < scrLeft - 32.0f)
+	case ep_4:	// 右から左
+		m_move.x = -4.0f;
+		/*if (m_pos.x < scrLeft - 32.0f)
 		{
 			m_pos.x = scrRight + 32.0f;
-		}
+		}*/
 		break;
 
-	case ep_5:	// 上から下にループ
-		m_move.y = -6.0f;
-		if (m_pos.y < scrBottom - 32.0f)
+	case ep_5:	// 上から下に停止、その後下
+		
+		if (m_frame < 60)
 		{
-			m_pos.y = scrTop + 32.0f;
+			m_move.y = -3.0f;
 		}
-		break;
-
-	case ep_6:	// 下から上にループ
-		m_move.y = 6.0f;
-		if (m_pos.y < scrBottom - 32.0f)
+		if (m_frame > 60 && m_frame < 60 * 4)
 		{
-			m_pos.y = scrBottom - 32.0f;
+			m_move.x = 0.0f;
+			m_move.y = 0.0f;
+		}
+		else if (m_frame > 60 * 4)
+		{
+			m_move.y = -2.0f;
 		}
 		break;
 
-	case ep_7:	// 
-
+	case ep_6:	// 左から右 ( 早め )
+		m_move.x = 4.0f;
+		m_move.y = -1.8f;
 		break;
 
-	case ep_8:
-
+	case ep_7:	// 右から左 ( 早め )
+		m_move.x = -4.0f;
+		m_move.y = -1.8f;
 		break;
 
-	case ep_9:
+	case ep_8:	// 左から右＋上から下
+		m_move.x = 1.0f;
+		m_move.y = -1.8f;
+		break;
 
+	case ep_9:	// 右から左＋上から下
+		m_move.x = -1.0f;
+		m_move.y = -1.8f;
 		break;
 
 	case ep_10:

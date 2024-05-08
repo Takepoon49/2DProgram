@@ -11,7 +11,7 @@ Player::Player()
 	// 自機
 	m_rect = {};
 	m_ownAlphaRect = { 0, 0, 128, 128 };
-	m_nowAnim = { 0.0f, 5.0f };
+	m_nowAnim = { 0.0f, 0.0f };
 
 	m_flg = false;
 	m_pos = { 0.0f, -250.0f };
@@ -82,29 +82,13 @@ Player::Player()
 	m_charge.frame = 0.0f;
 }
 
-void Player::Init()
+void Player::Init(Math::Vector2 _anim)
 {
-	
+	m_nowAnim = _anim;
 }
 
 void Player::CheckVec()
 {
-	// ロックオン
-	m_pLockIt = m_pLockList.begin();
-	while (m_pLockIt != m_pLockList.end())
-	{
-		const bool bAlive = (*m_pLockIt)->bActive;
-		if (!bAlive)
-		{
-			delete (*m_pLockIt);
-			m_pLockIt = m_pLockList.erase(m_pLockIt);
-		}
-		else
-		{
-			m_pLockIt++;
-		}
-	}
-
 	// 弾
 	std::vector<C_Bullet0*>::iterator _it;
 	_it = m_bulletList.begin();	// 可変長配列の先頭アドレスを格納
@@ -131,7 +115,14 @@ void Player::Update()
 	if (m_hitFrame > 0)
 	{
 		m_hitFrame--;
-		m_color.w = 0.3f;
+		//m_color.w = 0.3f;
+		m_color.w = fabs(sin(DegToRad(m_frame*12.0f)));
+
+		if (m_hitFrame > 110.0f - 24.0f)
+		{
+			m_pos.x = 0.0f;
+			m_pos.y += 6.0f;
+		}
 	}
 	else
 	{
@@ -152,12 +143,82 @@ void Player::Update()
 	//m_DebugColor = { sin(DegToRad(m_frame * 5)), sin(DegToRad(180 + m_frame * 5)), 1.0f, 1.0f};
 	//m_DebugColor = { 0.0f, 1.0f, 1.0f, 1.0f };
 
-	UpdateAttack();
+	switch (m_pOwner->GetNowScene())
+	{
+	case SceneType::Title:
+		m_pos.x = 0.0f;
+		m_pos.y = scrTop - 580.0f;
 
-	// 移動入力
-	m_moveSpd = 7.5f;
-	m_moveVec = { 0.0f, 0.0f };
-	UpdateMove();
+		// スキン左
+		if (GetAsyncKeyState(VK_LEFT) & 0x8000)
+		{
+			if (!SCENE.keyFlg[k_left])
+			{
+				if (m_nowAnim.y > 0.0f)
+				{
+					m_nowAnim.y -= 1.0f;
+				}
+			}
+			SCENE.keyFlg[k_left] = true;
+		}
+		else
+		{
+			SCENE.keyFlg[k_left] = false;
+		}
+		// スキン右
+		if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
+		{
+			if (!SCENE.keyFlg[k_right])
+			{
+				if (m_nowAnim.y < 6.0f)
+				m_nowAnim.y += 1.0f;
+			}
+			SCENE.keyFlg[k_right] = true;
+		}
+		else
+		{
+			SCENE.keyFlg[k_right] = false;
+		}
+		break;
+
+	case SceneType::Game1:
+		UpdateAttack();
+
+		// 移動入力
+		m_moveSpd = 7.5f;
+		m_moveVec = { 0.0f, 0.0f };
+
+		UpdateMove();
+
+		if (GetKey(VK_LEFT))
+		{
+			m_nowAnim.x = 8.0f;			// 傾き:左
+		}
+		else if (GetKey(VK_RIGHT))
+		{
+			m_nowAnim.x = 1.0f;			// 傾き:右
+		}
+		else
+		{
+			m_nowAnim.x = 0;			// 傾き：なし
+		}
+		break;
+		
+	case SceneType::Result:
+		m_pos = { scrLeft + 150.0f, 0.0f };
+		m_color.w = 1.0f;
+		break;
+	}
+
+	// スキンごとに拡大率変更
+	if (m_nowAnim.y < 3.0f)
+	{
+		m_scale = { 0.85f, 0.85f };
+	}
+	else
+	{
+		m_scale = { 0.80f, 0.80f };
+	}
 
 	m_moveVec *= m_moveSpd;
 
@@ -169,8 +230,6 @@ void Player::Update()
 		}
 
 		//m_move.x = -m_speed.x;			// 移動量：左
-
-		m_nowAnim.x = 8.0f;				// 傾き：左
 	}
 	else if (GetKey(VK_RIGHT))
 	{
@@ -180,20 +239,18 @@ void Player::Update()
 		}
 
 		//m_move.x = +m_speed.x;			// 移動量：右
-		
-		m_nowAnim.x = 1.0f;				// 傾き : 右
 	}
-	else if (GetKey('G'))
-	{
-		if ((int)m_frame % 2 == 0)
-		{
-			m_nowAnim.x += 2.0f;
-			if (m_nowAnim.x > 8.0f) m_nowAnim.x = 0.0f;
-		}
-	}
+	//else if (GetKey('G'))
+	//{
+		//if ((int)m_frame % 2 == 0)
+		//{
+		//	m_nowAnim.x += 2.0f;
+		//	if (m_nowAnim.x > 8.0f) m_nowAnim.x = 0.0f;
+		//}
+	//}
 	else
 	{
-		m_nowAnim.x = 0;			// 傾き：なし
+		//m_nowAnim.x = 0;			// 傾き：なし
 		//m_ownAlphaRect.x = 0;
 	}
 
@@ -266,8 +323,11 @@ void Player::Draw()
 	//行列の初期化 (図形描画の前に書く)
 	SHADER.m_spriteShader.SetMatrix(DirectX::XMMatrixIdentity());
 
-	// ローリングクールタイム
-	DrawBar(m_pos.x - m_rad.x, m_pos.y - 24.0f, 64.0f, 10.0f, m_roll.frame1, 45.0f, &Math::Color(0.0f, 1.0f, 0.0f, 0.9f), true, Dir::Right);
+	if (m_pOwner->GetNowScene() == SceneType::Game1)
+	{
+		// ローリングクールタイム
+		DrawBar(m_pos.x - m_rad.x, m_pos.y - 24.0f, 64.0f, 10.0f, m_roll.frame1, 45.0f, &Math::Color(0.0f, 1.0f, 0.0f, 0.9f), true, Dir::Right);
+	}
 
 	// 拡散型
 	if (m_webA.size >= 3.0f) DrawWebA();
@@ -859,7 +919,9 @@ HitStruct Player::GetWebBObj()
 
 void Player::OnHit()
 {
-	m_hitFrame = 90.0f;
+	m_hitFrame = 110.0f;
 	m_hitFlg = false;
 	m_pOwner->CreateExplosionA(ParticleType::ExplosionA, m_pos);
+
+	m_pos = { 0.0f, scrBottom - 64.0f };
 }

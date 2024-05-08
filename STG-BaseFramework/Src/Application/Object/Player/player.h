@@ -3,12 +3,6 @@
 #include "../BaseObject.h"
 #include "../Attack/Bullet/bullet0.h"
 
-struct LockOn
-{
-	Math::Vector2	pos;
-	bool			bActive;
-};
-
 class Player :public BaseObject
 {
 public:
@@ -16,7 +10,7 @@ public:
 	Player();
 	~Player()override { Release(); };
 
-	void Init() override;
+	void Init(Math::Vector2 _anim);
 	void CheckVec();
 	void Update() override;
 	void Draw() override;
@@ -83,7 +77,7 @@ public:
 	float GetWebBsize() { return m_webB.size; }
 	float GetWebBdegAdd() { return m_webB.degAdd; }
 
-	int GetRollFlg() { return m_roll.flg; }
+	int GetRollFlg() { return m_roll.flg; }	// 0,1 : 入力待機 2 : 移動中
 
 	float GetFrame0() { return m_frame; }
 
@@ -136,7 +130,7 @@ private:
 		Dir		dir;		// 方向
 		float	frame1;		// 入力用フレーム
 		float	frame2;		// 入力用フレーム
-		float	frameMax;		// 入力用フレーム
+		float	frameMax;	// 入力用フレーム
 		float	move;		// 移動量プラス用
 		int		cnt;		// キーのカウント用
 	}m_roll;
@@ -156,8 +150,8 @@ private:
 	bool				m_seekerFlg;	// フラグ
 
 	// ロックオン
-	std::vector<LockOn*> m_pLockList;
-	std::vector<LockOn*>::iterator m_pLockIt;
+	//std::vector<LockOn*> m_pLockList;
+	//std::vector<LockOn*>::iterator m_pLockIt;
 
 	// 弾(可変長)
 	KdTexture* m_pBullet0Tex;

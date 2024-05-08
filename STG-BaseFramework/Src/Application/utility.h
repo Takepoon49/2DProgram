@@ -25,6 +25,7 @@ enum E_keyFlg
 	k_tab,
 	k_shift,
 	k_i,
+	k_o,
 	k_l,
 	k_h,
 	k_z,
@@ -80,6 +81,7 @@ enum class ParticleType
 {
 	PlayerAB,	// プレイヤーアフターバーナー
 	PShadow,	// プレイヤー高速移動時の影
+	ShockWave,	// 衝撃波
 	ExplosionA,	// 爆発１
 	HLTrail,	// 追尾弾軌道	
 	MSLTrail,	// ミサイルの軌道
@@ -116,10 +118,10 @@ enum EnemyPattern
 	ep_d2,		// ぐるぐる回る敵
 	ep_1,		// 下→左
 	ep_2,		// 下→右
-	ep_3,		// 左から右にループ
-	ep_4,		// 右から左にループ
-	ep_5,		// 上から下にループ
-	ep_6,		// 下から上にループ
+	ep_3,		// 左→右に消える
+	ep_4,		// 右→左に消える
+	ep_5,		// 上→下に消える
+	ep_6,		// 下→上に消える
 	ep_7,		// 
 	ep_8,		// 
 	ep_9,		// 

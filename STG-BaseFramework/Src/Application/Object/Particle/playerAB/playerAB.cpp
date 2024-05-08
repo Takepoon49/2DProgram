@@ -21,7 +21,7 @@ void PlayerAB::Init()
 	m_pos.y = m_player->GetPos().y + m_player->GetMoveVec().y - 45.0f;
 	m_move = { 0.0f, -3.0f };
 	m_moveVec = Math::Vector2::Zero;
-	m_scale.x = Rnd() * 0.65f + 1.3f;
+	m_scale.x = Rnd() * 0.65f + 1.1f;
 	m_scale.y = m_scale.x * 1.5f;
 
 	m_rad = {};

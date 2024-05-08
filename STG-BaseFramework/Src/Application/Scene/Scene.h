@@ -45,6 +45,7 @@ private:
 
 	// シーン管理用変数
 	SceneType nowScene;
+	int m_sceneFlg = 0;
 	char nowSceneStr[100] = "";
 	Math::Color SceneFadeColor;
 
@@ -59,12 +60,19 @@ private:
 
 	// フレーム数
 	int m_frame = 0;
+	int m_min = 0;
+	int m_sec = 0;
 
 	// タイトル
-	Math::Matrix m_titleMat;	// 行列 
+	Math::Matrix m_titleMat;	// 行列
 	KdTexture m_titleTex0;		// Press Enter
 	KdTexture m_titleTex1;		// Ray Seeker
 	KdTexture m_titleTex2;		// 右のやつ
+
+	Math::Vector2 m_titleScrPos;	// スクロール用
+	Math::Matrix m_titleScrMat[2];	// スクロール用
+
+	char m_skinStr[2];
 
 	// プレイヤー
 	std::shared_ptr<Player> m_player;
@@ -120,7 +128,30 @@ private:
 	// 当たり判定
 	C_Hit		m_hit;
 
+	// リザルト文字
+	KdTexture		m_resultTex;
+	Math::Vector2	m_resultPos;
+	MathSet			m_resultMat;
+
+	KdTexture		m_resultBackTex;
+	KdTexture		m_resultCTex;
+	KdTexture		m_resultPTex;
+	Math::Matrix	m_resultCPMat;
+
+	Math::Vector2	m_pNowAnim = { 0.0f, 0.0f };
+
+	// DrawNumber用
+	KdTexture m_NumberTex;
+	static const int Max_digit = 7;
+	int d_num[Max_digit];
+	bool zeroFlg;
+	int d_numFont;
+	int digit;
+
 public:
+
+	// シーンタイプ
+	SceneType GetNowScene() { return nowScene; }
 
 	// 残機
 	int m_playerLife = 3;
@@ -128,8 +159,14 @@ public:
 	// ボム
 	int			m_bombNum = 0;
 
+	// ボス
+	int			m_bossFlg = 0;
+
 	// スコア
-	int m_score;
+	int			m_score = 0;
+	int			m_hScore = 1234;
+	int			m_scoreEnum = 0;	// 撃墜数
+
 	void AddScore(int _num) { m_score += _num; }
 
 	// フラグ
@@ -172,6 +209,9 @@ public:
 	void DrawString(SceneType nowScene);
 	void DrawFilledMaru(float x, float y, float rad, Math::Color);
 
+	// リザルト用
+	void DrawNumber(int x, Math::Vector2 num_Pos, int s);
+
 	// 敵出す用
 	void UpdateEnemyTL();
 
@@ -199,8 +239,8 @@ public:
 	void SetAllLock(int _flg);
 
 	// ポインタ関連
-	void CreateEnemy(Math::Vector2 _pos, int _flg);		// 敵出現 (あぱっち)
-	void CreateEnemy1(Math::Vector2 _pos, int _flg);	// 敵出現 (おすぷれい)
+	void CreateEnemy(Math::Vector2 _pos, int _flg, int _frame);		// 敵出現 (あぱっち)
+	void CreateEnemy1(Math::Vector2 _pos, int _flg, int _frame);	// 敵出現 (おすぷれい)
 
 	void CreateBoss(Math::Vector2 _pos, int _flg);		// ボス出現
 	void ResetBoss();									// ボスクリア
@@ -219,8 +259,10 @@ public:
 	//void CreateLightH(std::shared_ptr<HLaser> _pair);							// ？
 	void CreatePlayerAB(std::shared_ptr<BaseObject> _obj);						// プレイヤーAB
 	void CreatePShadow(Math::Vector2 _pos);										// プレイヤー高速移動時の影
-	void MakeShockWave(Math::Vector2 _pos);										// 衝撃波
+	void CreateShockWave(Math::Vector2 _pos);									// 衝撃波
 	void CreateMSLTrail(Math::Vector2 _pos);									// ミサイルの軌道
+
+	bool GetPlayerHitFlg();
 
 	void DrawPlayerAB();
 
