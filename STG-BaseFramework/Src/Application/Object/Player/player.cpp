@@ -725,29 +725,54 @@ void Player::UpdateAttack()
 		m_webB.flg = true;
 	}
 
-	// ボム
-	if (GetAsyncKeyState('C') & 0x8000)
+	if (m_pOwner->GetPlayerWIPFlg())
 	{
-		if (!SCENE.keyFlg[k_c])
+		// ボム ※作業中
+		if (GetAsyncKeyState('C') & 0x8000)
 		{
-			if (SCENE.m_bombNum > 0)
+			if (!SCENE.keyFlg[k_c])
 			{
-				SCENE.m_bombNum--;
-				SCENE.ShotBomb(m_pos, 0);
-				SCENE.ShotBomb(m_pos, 1);
+				if (SCENE.m_bombNum > 0)
+				{
+					SCENE.m_bombNum--;
+					SCENE.ShotBomb(m_pos, 0);
+					SCENE.ShotBomb(m_pos, 1);
+				}
+			}
+			SCENE.keyFlg[k_c] = true;
+		}
+		else
+		{
+			SCENE.keyFlg[k_c] = false;
+		}
+
+		// ３連ショット ※作業中
+		if (GetKey('A')) {
+			if (m_shootFlg == 0) {
+				m_shootFlg = 3;
 			}
 		}
-		SCENE.keyFlg[k_c] = true;
-	}
-	else
-	{
-		SCENE.keyFlg[k_c] = false;
-	}
 
-	// ３連ショット
-	if (GetKey('A')) {
-		if (m_shootFlg == 0) {
-			m_shootFlg = 3;
+		// ウェブ展開
+		// 拡散型
+		if (GetKey('S'))
+		{
+			if (m_webA.size <= 300.0f)
+			{
+				m_webA.size += 12.0f;
+			}
+		}
+		else
+		{
+			if (m_webA.size > 0.0f)
+			{
+				m_webA.size -= 18.0f;
+
+			}
+			else
+			{
+				m_webA.size = 0.0f;
+			}
 		}
 	}
 
@@ -793,28 +818,6 @@ void Player::UpdateAttack()
 			m_shootTime = 0;
 		}
 		break;
-	}
-
-	// ウェブ展開
-	// 拡散型
-	if (GetKey('S'))
-	{
-		if (m_webA.size <= 300.0f)
-		{
-			m_webA.size += 12.0f;
-		}
-	}
-	else
-	{
-		if (m_webA.size > 0.0f)
-		{
-			m_webA.size -= 18.0f;
-
-		}
-		else
-		{
-			m_webA.size = 0.0f;
-		}
 	}
 }
 

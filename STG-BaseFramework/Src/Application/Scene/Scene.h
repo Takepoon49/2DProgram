@@ -50,9 +50,11 @@ private:
 	Math::Color SceneFadeColor;
 
 	// デバッグ
-	bool	m_bShowDebugWindow = false;
-	bool	m_debugFlg = 0;
-	int		m_debugNowPage = 0;
+	bool	m_bShowDebugWindow	= false;	// ウィンドウ表示・非表示
+	bool	m_bDebugKey			= true;		// デバッグキー
+	bool	m_debugFlg			= false;	// デバッグフラグ（当たり判定の表示など）
+	int		m_debugNowPage		= 0;		// デバッグウィンドウのページ用
+	bool	m_bPlayerWIP		= true;		// プレイヤー作業中の部分用
 
 	// マウス座標関連
 	bool m_bGetMousePos = true;
@@ -177,6 +179,7 @@ public:
 
 	// デバッグ
 	bool GetDebugFlg() { return m_debugFlg; }
+	bool GetPlayerWIPFlg() { return m_bPlayerWIP; }
 
 	// 初期設定
 	void Init();

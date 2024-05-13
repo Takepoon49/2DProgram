@@ -268,7 +268,6 @@ void Scene::DeleteBullet1()
 
 void Scene::CreateBullet1(Math::Vector2 _pos, float _deg)
 {
-
 	std::shared_ptr<Bullet1> temp = std::make_shared<Bullet1>();
 	temp->Init();
 	temp->SetTexture("Data/Texture/Bullet/Bullet-100x100.png");
@@ -509,34 +508,37 @@ void Scene::DrawPlayerAB()
 
 void Scene::Update()
 {
-	// デバッグウィンドウの表示・非表示切り替え ( ctrl + '-' )
-	if (GetAsyncKeyState(VK_OEM_MINUS) & 0x8000)
+	if (m_bDebugKey)
 	{
-		if (!keyFlg[k_any1])
+		// デバッグウィンドウの表示・非表示切り替え ( ctrl + '-' )
+		if (GetAsyncKeyState(VK_OEM_MINUS) & 0x8000)
 		{
-			m_bShowDebugWindow = !m_bShowDebugWindow;
-		}
-		keyFlg[k_any1] = true;
-	}
-	else
-	{
-		keyFlg[k_any1] = false;
-	}
-
-	// デバッグフラグの切り替え ( [Ctrl] + [D] )
-	if (GetAsyncKeyState(VK_CONTROL) & 0x8000)
-	{
-		if (GetAsyncKeyState('D') & 0x8000)
-		{
-			if (!keyFlg[k_any2])
+			if (!keyFlg[k_any1])
 			{
-				m_debugFlg = !m_debugFlg;
+				m_bShowDebugWindow = !m_bShowDebugWindow;
 			}
-			keyFlg[k_any2] = true;
+			keyFlg[k_any1] = true;
 		}
 		else
 		{
-			keyFlg[k_any2] = false;
+			keyFlg[k_any1] = false;
+		}
+
+		// デバッグフラグの切り替え ( [Ctrl] + [D] )
+		if (GetAsyncKeyState(VK_CONTROL) & 0x8000)
+		{
+			if (GetAsyncKeyState('D') & 0x8000)
+			{
+				if (!keyFlg[k_any2])
+				{
+					m_debugFlg = !m_debugFlg;
+				}
+				keyFlg[k_any2] = true;
+			}
+			else
+			{
+				keyFlg[k_any2] = false;
+			}
 		}
 	}
 
@@ -691,8 +693,8 @@ void Scene::UpdateTitle()
 
 void Scene::CheckGame1Vec()
 {
-	std::vector<std::shared_ptr<Bomb>>::iterator _bombIt;
-	_bombIt = m_bombList.begin();
+	//std::vector<std::shared_ptr<Bomb>>::iterator _bombIt;
+	auto _bombIt = m_bombList.begin();
 	while (_bombIt != m_bombList.end())
 	{
 		const bool bAlive = (*_bombIt)->GetFlg();
@@ -796,28 +798,32 @@ void Scene::UpdateGame1()
 	m_frame++;
 
 	// デバッグキー更新
-	UpdateDebugEnemy();
+	if (m_bDebugKey)
+	{
+		// 敵出現、ライフ、ボムなど
+		UpdateDebugEnemy();
+
+		// =デバッグ= アイテム出現
+		if (GetKey('I'))
+		{
+			if (!keyFlg[k_i])
+			{
+				CreateItem({ 0.0f, 200.0f }, 0);
+				CreateItem({ 100.0f, 200.0f }, 1);
+			}
+			keyFlg[k_i] = true;
+		}
+		else
+		{
+			keyFlg[k_i] = false;
+		}
+	}
 
 	// 敵のタイムライン更新
 	UpdateEnemyTL();
 
 	// ビーム
 	m_beam.Update(beamNum, beamDeg);
-
-	// アイテム
-	if (GetKey('I'))
-	{
-		if (!keyFlg[k_i])
-		{
-			CreateItem({ 0.0f, 200.0f }, 0);
-			CreateItem({ 100.0f, 200.0f }, 1);
-		}
-		keyFlg[k_i] = true;
-	}
-	else
-	{
-		keyFlg[k_i] = false;
-	}
 
 	// 自機
 	if (!m_gameOverFlg)
@@ -1011,21 +1017,24 @@ void Scene::UpdateGame1()
 	}
 
 	// 強制シーン遷移
-	if (GetAsyncKeyState(VK_RETURN) & 0x8000)
+	if (m_bDebugKey)
 	{
-		if (!keyFlg[k_return])
+		if (GetAsyncKeyState(VK_RETURN) & 0x8000)
 		{
-			if (m_sceneFlg == 0)
+			if (!keyFlg[k_return])
 			{
-				m_sceneFlg = 4;
-				m_frame = 0;
+				if (m_sceneFlg == 0)
+				{
+					m_sceneFlg = 4;
+					m_frame = 0;
+				}
 			}
+			keyFlg[k_return] = true;
 		}
-		keyFlg[k_return] = true;
-	}
-	else
-	{
-		keyFlg[k_return] = false;
+		else
+		{
+			keyFlg[k_return] = false;
+		}
 	}
 
 	// 明るく & フレーム初期化
